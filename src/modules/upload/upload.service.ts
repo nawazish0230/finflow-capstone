@@ -13,6 +13,7 @@ import { DOCUMENT_PROCESSING_STATUS } from '../../common/constants';
 import { TransactionsService } from '../transactions/transactions.service';
 import { S3StorageService } from './storage/s3-storage.service';
 import { TransactionParserService } from './services/transaction-parser.service';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 @Injectable()
 export class UploadService {
@@ -24,6 +25,8 @@ export class UploadService {
   constructor(
     @InjectModel(DocumentUpload.name)
     private readonly documentModel: Model<DocumentUploadDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
     private readonly config: ConfigService,
     private readonly transactionsService: TransactionsService,
     private readonly s3Storage: S3StorageService,
@@ -32,9 +35,9 @@ export class UploadService {
     this.uploadPath = this.config.get<string>('storage.localPath', './uploads');
     this.storageProvider = this.config.get<string>('storage.provider', 'local');
     this.useS3 = this.storageProvider === 's3' && this.s3Storage.isConfigured();
-    if (!this.useS3 && !fs.existsSync(this.uploadPath)) {
-      fs.mkdirSync(this.uploadPath, { recursive: true });
-    }
+    // if (!this.useS3 && !fs.existsSync(this.uploadPath)) {
+    //   fs.mkdirSync(this.uploadPath, { recursive: true });
+    // }
   }
 
   /**
@@ -46,6 +49,16 @@ export class UploadService {
     password?: string,
   ): Promise<{ documentId: string; status: string }> {
     const filename = file.originalname || 'statement.pdf';
+
+    // TODO: this need to be uncommented keping it for testing purposes
+    // const doc = await this.documentModel
+    //   .findOne({ userId, filename })
+    //   .lean()
+    //   .exec();
+    // if (doc) {
+    //   throw new BadRequestException('Document already exists');
+    // }
+
     const ext = path.extname(filename).toLowerCase();
     if (ext !== '.pdf')
       throw new BadRequestException('Only PDF files are allowed');
@@ -62,27 +75,25 @@ export class UploadService {
       status: DOCUMENT_PROCESSING_STATUS.UPLOADED,
     });
 
-    if (this.useS3) {
-      await this.s3Storage.put(storageKey, file.buffer, 'application/pdf');
-    } else {
-      const localPath = path.join(this.uploadPath, storageKey);
-      const dir = path.dirname(localPath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(localPath, file.buffer);
+    if (!this.useS3) {
+      throw new BadRequestException('Only S3 storage is supported');
     }
 
-    await this.documentModel.updateOne(
-      { userId, documentId },
-      { status: DOCUMENT_PROCESSING_STATUS.EXTRACTING },
-    );
+    await this.s3Storage.put(storageKey, file.buffer, 'application/pdf');
 
+    // TODO: improvement we can use KAFKA to process this in background
     setImmediate(() =>
       this.processDocument(userId, documentId, storageKey, password).catch(
         () => {},
       ),
     );
 
-    return { documentId, status: DOCUMENT_PROCESSING_STATUS.EXTRACTING };
+    await this.documentModel.updateOne(
+      { userId, documentId },
+      { status: DOCUMENT_PROCESSING_STATUS.COMPLETED },
+    );
+
+    return { documentId, status: DOCUMENT_PROCESSING_STATUS.COMPLETED };
   }
 
   private async processDocument(
@@ -98,15 +109,10 @@ export class UploadService {
 
       // Get PDF buffer
       let pdfBuffer: Buffer;
-      if (this.useS3) {
-        pdfBuffer = await this.s3Storage.get(storageKey);
-      } else {
-        const localPath = path.join(this.uploadPath, storageKey);
-        if (!fs.existsSync(localPath)) {
-          throw new Error('File not found on disk');
-        }
-        pdfBuffer = fs.readFileSync(localPath);
+      if (!this.useS3) {
+        throw new BadRequestException('Only S3 storage is supported');
       }
+      pdfBuffer = await this.s3Storage.get(storageKey);
 
       // Parse PDF and extract transactions
       const parsedTransactions = await this.transactionParser.parsePdf(
@@ -140,15 +146,6 @@ export class UploadService {
         `Failed to process document ${documentId}`,
         (err as Error).stack,
       );
-      await this.documentModel
-        .updateOne(
-          { userId, storageKey },
-          {
-            status: DOCUMENT_PROCESSING_STATUS.FAILED,
-            errorMessage: (err as Error).message,
-          },
-        )
-        .exec();
     }
   }
 

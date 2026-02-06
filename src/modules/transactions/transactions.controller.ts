@@ -29,6 +29,6 @@ export class TransactionsController {
       limit: result.limit,
       total: result.total,
     };
-    return result.items;
+    return result;
   }
 }

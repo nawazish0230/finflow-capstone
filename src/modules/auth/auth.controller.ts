@@ -20,9 +20,8 @@ export class AuthController {
     if (dto.email && dto.password) {
       return this.authService.loginWithEmailPassword(dto.email, dto.password);
     }
-    if (dto.userId) {
-      return this.authService.signToken({ sub: dto.userId, email: dto.email });
-    }
-    throw new BadRequestException('Provide either email and password or userId');
+    throw new BadRequestException(
+      'Provide either email and password or userId',
+    );
   }
 }

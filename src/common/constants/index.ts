@@ -4,6 +4,7 @@ export const TRANSACTION_CATEGORIES = [
   'Shopping',
   'Bills',
   'Entertainment',
+  'OnlinePayments',
   'Others',
 ] as const;
 
@@ -16,7 +17,8 @@ export const DOCUMENT_PROCESSING_STATUS = {
   FAILED: 'failed',
 } as const;
 
-export type DocumentProcessingStatus = (typeof DOCUMENT_PROCESSING_STATUS)[keyof typeof DOCUMENT_PROCESSING_STATUS];
+export type DocumentProcessingStatus =
+  (typeof DOCUMENT_PROCESSING_STATUS)[keyof typeof DOCUMENT_PROCESSING_STATUS];
 
 export const PAGINATION = {
   DEFAULT_PAGE: 1,

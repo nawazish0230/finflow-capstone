@@ -199,18 +199,13 @@ export class TransactionParserService {
     password?: string,
   ): Promise<ParsedTransaction[]> {
     try {
-      const options = password ? { password } : undefined;
-
-      // const pdfData = await pdfParse(buffer, options);
-      // const text = pdfData.text;
-
       const parser = new PDFParse({
         data: buffer,
         password,
       });
 
       const result = await parser.getText();
-      console.log({ result: result.text });
+      // console.log({ result: result.text });
 
       this.logger.debug(
         `Extracted ${result.text.length} chars from PDF via pdf-parse`,
@@ -242,7 +237,7 @@ export class TransactionParserService {
     // Type indicators: CR (credit), DR (debit)
     const typePattern = /\b(CR|DR|DEBIT|CREDIT)\b/i;
 
-    console.log({ lines });
+    // console.log({ lines });
     for (const line of lines) {
       // Must start with a date
       const dateMatch = line.match(datePattern);
