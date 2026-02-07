@@ -15,7 +15,6 @@ const document_schema_1 = require("./schemas/document.schema");
 const transactions_module_1 = require("../transactions/transactions.module");
 const storage_module_1 = require("./storage/storage.module");
 const transaction_parser_service_1 = require("./services/transaction-parser.service");
-const user_schema_1 = require("../auth/schemas/user.schema");
 let UploadModule = class UploadModule {
 };
 exports.UploadModule = UploadModule;
@@ -24,7 +23,6 @@ exports.UploadModule = UploadModule = __decorate([
         imports: [
             mongoose_1.MongooseModule.forFeature([
                 { name: document_schema_1.DocumentUpload.name, schema: document_schema_1.DocumentUploadSchema },
-                { name: user_schema_1.User.name, schema: user_schema_1.UserSchema },
             ]),
             transactions_module_1.TransactionsModule,
             storage_module_1.StorageModule,

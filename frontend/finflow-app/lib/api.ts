@@ -1,10 +1,17 @@
 /**
  * API client for FinFlow backend. Uses env or default base URL.
+ * Auth (login/register) uses auth-service; other endpoints use upload-service.
+ * Upload-service requires Authorization: Bearer <token> only.
  */
 
 const BASE_URL =
   (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) ||
   'http://localhost:3000';
+
+/** Auth service base URL (register, login). Defaults to BASE_URL if not set. */
+const AUTH_BASE_URL =
+  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_AUTH_API_URL) ||
+  BASE_URL;
 
 export interface ApiError {
   message: string;
@@ -13,10 +20,11 @@ export interface ApiError {
 
 async function request<T>(
   path: string,
-  options: RequestInit & { token?: string | null } = {}
+  options: RequestInit & { token?: string | null; baseUrl?: string } = {}
 ): Promise<T> {
-  const { token, ...init } = options;
-  const url = path.startsWith('http') ? path : `${BASE_URL}${path}`;
+  const { token, baseUrl, ...init } = options;
+  const root = baseUrl ?? BASE_URL;
+  const url = path.startsWith('http') ? path : `${root}${path}`;
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(init.headers as Record<string, string>),
@@ -58,8 +66,18 @@ export interface RegisterResponse extends LoginResponse {}
 
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post<LoginResponse>('/auth/login', { email, password }),
+    request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+      headers: { 'Content-Type': 'application/json' },
+      baseUrl: AUTH_BASE_URL,
+    }),
 
   register: (email: string, password: string) =>
-    api.post<RegisterResponse>('/auth/register', { email, password }),
+    request<RegisterResponse>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+      headers: { 'Content-Type': 'application/json' },
+      baseUrl: AUTH_BASE_URL,
+    }),
 };

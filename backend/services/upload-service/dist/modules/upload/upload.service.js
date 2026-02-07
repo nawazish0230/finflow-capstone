@@ -58,10 +58,8 @@ const constants_1 = require("../../common/constants");
 const transactions_service_1 = require("../transactions/transactions.service");
 const s3_storage_service_1 = require("./storage/s3-storage.service");
 const transaction_parser_service_1 = require("./services/transaction-parser.service");
-const user_schema_1 = require("../auth/schemas/user.schema");
 let UploadService = UploadService_1 = class UploadService {
     documentModel;
-    userModel;
     config;
     transactionsService;
     s3Storage;
@@ -70,9 +68,8 @@ let UploadService = UploadService_1 = class UploadService {
     uploadPath;
     storageProvider;
     useS3;
-    constructor(documentModel, userModel, config, transactionsService, s3Storage, transactionParser) {
+    constructor(documentModel, config, transactionsService, s3Storage, transactionParser) {
         this.documentModel = documentModel;
-        this.userModel = userModel;
         this.config = config;
         this.transactionsService = transactionsService;
         this.s3Storage = s3Storage;
@@ -150,9 +147,7 @@ exports.UploadService = UploadService;
 exports.UploadService = UploadService = UploadService_1 = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(document_schema_1.DocumentUpload.name)),
-    __param(1, (0, mongoose_1.InjectModel)(user_schema_1.User.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
-        mongoose_2.Model,
         config_1.ConfigService,
         transactions_service_1.TransactionsService,
         s3_storage_service_1.S3StorageService,

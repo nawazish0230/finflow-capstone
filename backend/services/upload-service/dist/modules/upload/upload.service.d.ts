@@ -4,10 +4,8 @@ import { DocumentUpload, DocumentUploadDocument } from './schemas/document.schem
 import { TransactionsService } from '../transactions/transactions.service';
 import { S3StorageService } from './storage/s3-storage.service';
 import { TransactionParserService } from './services/transaction-parser.service';
-import { UserDocument } from '../auth/schemas/user.schema';
 export declare class UploadService {
     private readonly documentModel;
-    private readonly userModel;
     private readonly config;
     private readonly transactionsService;
     private readonly s3Storage;
@@ -16,7 +14,7 @@ export declare class UploadService {
     private readonly uploadPath;
     private readonly storageProvider;
     private readonly useS3;
-    constructor(documentModel: Model<DocumentUploadDocument>, userModel: Model<UserDocument>, config: ConfigService, transactionsService: TransactionsService, s3Storage: S3StorageService, transactionParser: TransactionParserService);
+    constructor(documentModel: Model<DocumentUploadDocument>, config: ConfigService, transactionsService: TransactionsService, s3Storage: S3StorageService, transactionParser: TransactionParserService);
     initiateUpload(userId: string, file: {
         buffer: Buffer;
         originalname: string;

@@ -7,12 +7,10 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { JwtPayload } from '../../common/decorators/current-user.decorator';
 import { User, UserDocument } from './schemas/user.schema';
 
 export interface TokenResult {
   accessToken: string;
-  // expiresIn: string;
 }
 
 const SALT_ROUNDS = 10;
@@ -29,8 +27,6 @@ export class AuthService {
     email?: string;
   }): Promise<TokenResult> {
     const accessToken = this.jwtService.sign(payload);
-    // const decoded = this.jwtService.decode(accessToken) as { exp: number };
-    // const expiresIn = decoded?.exp ? `${Math.max(0, decoded.exp - Math.floor(Date.now() / 1000))}s` : '7d';
     return { accessToken };
   }
 
@@ -54,7 +50,7 @@ export class AuthService {
     });
   }
 
-  /** Load user from DB by email, verify password, return JWT (same user record as register). */
+  /** Load user from DB by email, verify password, return JWT. */
   async loginWithEmailPassword(
     email: string,
     password: string,
@@ -72,9 +68,5 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
     return this.signToken({ sub: user._id.toString(), email: user.email });
-  }
-
-  async validatePayload(payload: JwtPayload): Promise<JwtPayload> {
-    return { sub: payload.sub, email: payload.email };
   }
 }

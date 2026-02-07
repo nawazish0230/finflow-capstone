@@ -16,9 +16,8 @@ exports.TransactionsController = void 0;
 const common_1 = require("@nestjs/common");
 const transactions_service_1 = require("./transactions.service");
 const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
-const list_transactions_dto_1 = require("./dto/list-transactions.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
-const common_2 = require("@nestjs/common");
+const list_transactions_dto_1 = require("./dto/list-transactions.dto");
 let TransactionsController = class TransactionsController {
     transactionsService;
     constructor(transactionsService) {
@@ -56,7 +55,7 @@ __decorate([
 ], TransactionsController.prototype, "list", null);
 exports.TransactionsController = TransactionsController = __decorate([
     (0, common_1.Controller)('transactions'),
-    (0, common_2.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [transactions_service_1.TransactionsService])
 ], TransactionsController);
 //# sourceMappingURL=transactions.controller.js.map

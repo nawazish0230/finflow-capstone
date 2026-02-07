@@ -1,10 +1,9 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { JwtPayload } from '../../common/decorators/current-user.decorator';
-import { ListTransactionsDto } from './dto/list-transactions.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { UseGuards } from '@nestjs/common';
+import { ListTransactionsDto } from './dto/list-transactions.dto';
 import type { Request } from 'express';
 
 @Controller('transactions')
