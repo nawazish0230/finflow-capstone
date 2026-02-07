@@ -16,17 +16,17 @@ import { useAuth } from "@/stores/auth-store";
 import { Spacing } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-export default function LoginScreen() {
-  const { login, error, clearError } = useAuth();
-  const [email, setEmail] = useState("john@gmail.com");
-  const [password, setPassword] = useState("123456");
+export default function RegisterScreen() {
+  const { register, error, clearError } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const backgroundColor = useThemeColor({}, "background");
   const errorColor = useThemeColor({}, "error");
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     setLocalError(null);
     clearError();
     if (!email.trim()) {
@@ -39,7 +39,7 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      await register(email.trim(), password);
     } catch {
       // error set in store
     } finally {
@@ -64,10 +64,10 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <ThemedText type="title" style={styles.title}>
-            Welcome back
+            Create account
           </ThemedText>
           <ThemedText style={styles.subtitle}>
-            Sign in to manage your finances
+            Sign up to manage your finances
           </ThemedText>
 
           <View style={styles.form}>
@@ -86,7 +86,7 @@ export default function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              autoComplete="password"
+              autoComplete="password-new"
               importantForAutofill="yes"
             />
           </View>
@@ -96,15 +96,11 @@ export default function LoginScreen() {
             </ThemedText>
           ) : null}
           <Button
-            title="Sign in"
-            onPress={handleLogin}
+            title="Sign up"
+            onPress={handleRegister}
             loading={loading}
             style={styles.button}
           />
-
-          <TouchableOpacity style={styles.skipLink} activeOpacity={0.7}>
-            <ThemedText style={styles.skipText}>Skip login (dev)</ThemedText>
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.footer}
@@ -114,11 +110,11 @@ export default function LoginScreen() {
             }}
           >
             <ThemedText style={styles.footerText}>
-              Don't have an account?{" "}
+              Already have an account?{" "}
             </ThemedText>
-            <Link href={"/(auth)/register" as Href} asChild>
+            <Link href={"/(auth)/login" as Href} asChild>
               <TouchableOpacity>
-                <ThemedText type="link">Sign up</ThemedText>
+                <ThemedText type="link">Sign in</ThemedText>
               </TouchableOpacity>
             </Link>
           </TouchableOpacity>
@@ -154,14 +150,6 @@ const styles = StyleSheet.create({
   button: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.lg,
-  },
-  skipLink: {
-    alignSelf: "center",
-    marginBottom: Spacing.md,
-  },
-  skipText: {
-    fontSize: 14,
-    opacity: 0.8,
   },
   footer: {
     flexDirection: "row",

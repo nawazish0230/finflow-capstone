@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,9 +14,10 @@ import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { BorderRadius, Colors, Spacing } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useWindowDimensions } from 'react-native';
 
-const CHART_WIDTH = Dimensions.get('window').width - Spacing.lg * 2 - 24;
-const PIE_SIZE = 180;
+const PIE_HEIGHT = 200;
+const LINE_CHART_HEIGHT = 200;
 
 type TabKey = 'transactions' | 'insights';
 type CategoryKey = 'All' | 'Food' | 'Travel' | 'Bills' | 'Income';
@@ -75,6 +75,8 @@ const chartConfig = (primary: string, text: string, textSecondary: string) => ({
 });
 
 export default function DashboardScreen() {
+  const { width: screenWidth } = useWindowDimensions();
+  const chartWidth = Math.min(screenWidth - Spacing.lg * 2 - 24, 340);
   const colorScheme = useColorScheme() ?? 'light';
   const colors = Colors[colorScheme];
   const backgroundColor = useThemeColor({}, 'background');
@@ -112,11 +114,15 @@ export default function DashboardScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor }]}
+      edges={["top"]}
+    >
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+      >
         <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
           <ThemedText type="subtitle">Financial Overview</ThemedText>
           <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
@@ -124,59 +130,99 @@ export default function DashboardScreen() {
           </ThemedText>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(80).duration(320)} style={styles.summaryRow}>
+        <Animated.View
+          entering={FadeInDown.delay(80).duration(320)}
+          style={styles.summaryRow}
+        >
           <View style={[styles.summaryCardDebit, { backgroundColor: primary }]}>
-            <ThemedText style={styles.summaryLabelWhite}>Total Debit</ThemedText>
+            <ThemedText style={styles.summaryLabelWhite}>
+              Total Debit
+            </ThemedText>
             <View style={styles.summaryAmountRow}>
               <ThemedText style={styles.summaryAmountWhite}>$3,240</ThemedText>
-              <MaterialIcons name="trending-down" size={20} color="rgba(255,255,255,0.9)" />
+              <MaterialIcons
+                name="trending-down"
+                size={20}
+                color="rgba(255,255,255,0.9)"
+              />
             </View>
           </View>
-          <View style={[styles.summaryCardCredit, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>Total Credit</ThemedText>
+          <View
+            style={[
+              styles.summaryCardCredit,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <ThemedText style={[styles.summaryLabel, { color: textSecondary }]}>
+              Total Credit
+            </ThemedText>
             <View style={styles.summaryAmountRow}>
-              <ThemedText style={[styles.summaryAmountGreen, { color: success }]}>$5,350</ThemedText>
+              <ThemedText
+                style={[styles.summaryAmountGreen, { color: success }]}
+              >
+                $5,350
+              </ThemedText>
               <MaterialIcons name="trending-up" size={20} color={success} />
             </View>
           </View>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(120).duration(320)} style={styles.segmentWrap}>
-          <View style={[styles.segment, { backgroundColor: colors.border + '40' }]}>
+        <Animated.View
+          entering={FadeInDown.delay(120).duration(320)}
+          style={styles.segmentWrap}
+        >
+          <View
+            style={[styles.segment, { backgroundColor: colors.border + "40" }]}
+          >
             <Pressable
-              onPress={() => setActiveTab('transactions')}
+              onPress={() => setActiveTab("transactions")}
               style={[
                 styles.segmentButton,
-                activeTab === 'transactions' && { backgroundColor: primary },
-              ]}>
+                activeTab === "transactions" && { backgroundColor: primary },
+              ]}
+            >
               <ThemedText
                 style={[
                   styles.segmentButtonText,
-                  { color: activeTab === 'transactions' ? '#fff' : colors.text },
-                ]}>
+                  {
+                    color: activeTab === "transactions" ? "#fff" : colors.text,
+                  },
+                ]}
+              >
                 Transactions
               </ThemedText>
             </Pressable>
             <Pressable
-              onPress={() => setActiveTab('insights')}
-              style={[styles.segmentButton, activeTab === 'insights' && { backgroundColor: primary }]}>
+              onPress={() => setActiveTab("insights")}
+              style={[
+                styles.segmentButton,
+                activeTab === "insights" && { backgroundColor: primary },
+              ]}
+            >
               <ThemedText
                 style={[
                   styles.segmentButtonText,
-                  { color: activeTab === 'insights' ? '#fff' : colors.text },
-                ]}>
+                  { color: activeTab === "insights" ? "#fff" : colors.text },
+                ]}
+              >
                 Insights
               </ThemedText>
             </Pressable>
           </View>
         </Animated.View>
 
-        {activeTab === 'transactions' ? (
+        {activeTab === "transactions" ? (
           <Animated.View
             key="transactions"
             entering={FadeIn.duration(280)}
-            style={styles.tabContent}>
-            <View style={[styles.searchRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            style={styles.tabContent}
+          >
+            <View
+              style={[
+                styles.searchRow,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
               <MaterialIcons name="search" size={20} color={textSecondary} />
               <TextInput
                 placeholder="Search..."
@@ -186,13 +232,18 @@ export default function DashboardScreen() {
                 style={[styles.searchInput, { color: colors.text }]}
               />
               <Pressable hitSlop={12}>
-                <MaterialIcons name="filter-list" size={22} color={colors.text} />
+                <MaterialIcons
+                  name="filter-list"
+                  size={22}
+                  color={colors.text}
+                />
               </Pressable>
             </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsWrap}>
+              contentContainerStyle={styles.chipsWrap}
+            >
               {CATEGORIES.map((cat) => (
                 <Pressable
                   key={cat}
@@ -200,15 +251,20 @@ export default function DashboardScreen() {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: selectedCategory === cat ? primary : colors.card,
+                      backgroundColor:
+                        selectedCategory === cat ? primary : colors.card,
                       borderColor: colors.border,
                     },
-                  ]}>
+                  ]}
+                >
                   <ThemedText
                     style={[
                       styles.chipText,
-                      { color: selectedCategory === cat ? '#fff' : colors.text },
-                    ]}>
+                      {
+                        color: selectedCategory === cat ? "#fff" : colors.text,
+                      },
+                    ]}
+                  >
                     {cat}
                   </ThemedText>
                 </Pressable>
@@ -219,93 +275,184 @@ export default function DashboardScreen() {
                 <Animated.View
                   key={t.id}
                   entering={FadeInDown.delay(i * 40).duration(260)}
-                  style={[styles.transactionRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={[styles.txIconWrap, { backgroundColor: colors.border + '50' }]}>
+                  style={[
+                    styles.transactionRow,
+                    {
+                      backgroundColor: colors.card,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.txIconWrap,
+                      { backgroundColor: colors.border + "50" },
+                    ]}
+                  >
                     <MaterialIcons
-                      name={(CATEGORY_ICON[t.category] ?? 'receipt') as React.ComponentProps<typeof MaterialIcons>['name']}
+                      name={
+                        (CATEGORY_ICON[t.category] ??
+                          "receipt") as React.ComponentProps<
+                          typeof MaterialIcons
+                        >["name"]
+                      }
                       size={22}
-                      color={t.type === 'credit' ? success : colors.text}
+                      color={t.type === "credit" ? success : colors.text}
                     />
                   </View>
                   <View style={styles.txBody}>
                     <ThemedText style={styles.txName}>{t.name}</ThemedText>
-                    <ThemedText style={[styles.txDate, { color: textSecondary }]}>{t.date}</ThemedText>
+                    <ThemedText
+                      style={[styles.txDate, { color: textSecondary }]}
+                    >
+                      {t.date}
+                    </ThemedText>
                   </View>
                   <ThemedText
                     style={[
                       styles.txAmount,
-                      { color: t.type === 'credit' ? success : colors.text },
-                    ]}>
-                    {t.type === 'credit' ? '+' : '-'}${t.amount.toFixed(2)}
+                      { color: t.type === "credit" ? success : colors.text },
+                    ]}
+                  >
+                    {t.type === "credit" ? "+" : "-"}${t.amount.toFixed(2)}
                   </ThemedText>
                 </Animated.View>
               ))}
             </View>
           </Animated.View>
         ) : (
-          <Animated.View key="insights" entering={FadeIn.duration(280)} style={styles.tabContent}>
+          <Animated.View
+            key="insights"
+            entering={FadeIn.duration(280)}
+            style={styles.tabContent}
+          >
             <View style={styles.insightCardsRow}>
-              <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.insightIconWrap, { backgroundColor: '#F59E0B22' }]}>
+              <View
+                style={[
+                  styles.insightCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.insightIconWrap,
+                    { backgroundColor: "#F59E0B22" },
+                  ]}
+                >
                   <MaterialIcons name="show-chart" size={24} color="#F59E0B" />
                 </View>
-                <ThemedText style={[styles.insightLabel, { color: textSecondary }]}>
+                <ThemedText
+                  style={[styles.insightLabel, { color: textSecondary }]}
+                >
                   Highest Spending Month
                 </ThemedText>
                 <ThemedText style={styles.insightValue}>June</ThemedText>
-                <ThemedText style={[styles.insightDetail, { color: textSecondary }]}>$3,500 spent</ThemedText>
+                <ThemedText
+                  style={[styles.insightDetail, { color: textSecondary }]}
+                >
+                  $3,500 spent
+                </ThemedText>
               </View>
-              <View style={[styles.insightCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                <View style={[styles.insightIconWrap, { backgroundColor: primary + '22' }]}>
+              <View
+                style={[
+                  styles.insightCard,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.insightIconWrap,
+                    { backgroundColor: primary + "22" },
+                  ]}
+                >
                   <MaterialIcons name="pie-chart" size={24} color={primary} />
                 </View>
-                <ThemedText style={[styles.insightLabel, { color: textSecondary }]}>Top Category</ThemedText>
+                <ThemedText
+                  style={[styles.insightLabel, { color: textSecondary }]}
+                >
+                  Top Category
+                </ThemedText>
                 <ThemedText style={styles.insightValue}>Food</ThemedText>
-                <ThemedText style={[styles.insightDetail, { color: textSecondary }]}>25% of total spend</ThemedText>
+                <ThemedText
+                  style={[styles.insightDetail, { color: textSecondary }]}
+                >
+                  25% of total spend
+                </ThemedText>
               </View>
             </View>
 
-            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <ThemedText style={styles.chartTitle}>Spending by Category</ThemedText>
-              <View style={styles.pieWrap}>
-                <PieChart
-                  data={PIE_DATA}
-                  width={CHART_WIDTH}
-                  height={200}
-                  chartConfig={pieChartConfig}
-                  accessor="amount"
-                  backgroundColor="transparent"
-                  paddingLeft="0"
-                  hasLegend={false}
-                />
-                <View style={styles.pieCenter}>
+            <View
+              style={[
+                styles.chartCard,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <ThemedText style={styles.chartTitle}>
+                Spending by Category
+              </ThemedText>
+              <View style={[styles.pieWrap, { height: PIE_HEIGHT }]}>
+                <View style={[styles.pieChartContainer, { width: chartWidth }]}>
+                  <PieChart
+                    data={PIE_DATA}
+                    width={chartWidth}
+                    height={PIE_HEIGHT}
+                    chartConfig={pieChartConfig}
+                    accessor="amount"
+                    backgroundColor="transparent"
+                    paddingLeft={String(chartWidth / 4)}
+                    hasLegend={false}
+                    style={styles.pieChartSvg}
+                  />
+                </View>
+                <View
+                  style={[
+                    styles.pieCenter,
+                    { top: PIE_HEIGHT / 2, marginTop: -28 },
+                  ]}
+                >
                   <ThemedText type="subtitle">$1,550</ThemedText>
-                  <ThemedText style={[styles.pieCenterLabel, { color: textSecondary }]}>Total</ThemedText>
+                  <ThemedText
+                    style={[styles.pieCenterLabel, { color: textSecondary }]}
+                  >
+                    Total
+                  </ThemedText>
                 </View>
               </View>
               <View style={styles.legendRow}>
                 {PIE_DATA.map((d) => (
-                  <ThemedText key={d.name} style={[styles.legendItem, { color: textSecondary }]}>
+                  <ThemedText
+                    key={d.name}
+                    style={[styles.legendItem, { color: textSecondary }]}
+                  >
                     {d.name}
                   </ThemedText>
                 ))}
               </View>
             </View>
 
-            <View style={[styles.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <ThemedText style={styles.chartTitle}>Monthly expense trend</ThemedText>
-              <LineChart
-                data={LINE_DATA}
-                width={CHART_WIDTH}
-                height={200}
-                chartConfig={lineChartConfig}
-                bezier
-                withDots
-                withInnerLines
-                withOuterLines={false}
-                fromZero
-                style={styles.lineChart}
-              />
+            <View
+              style={[
+                styles.chartCard,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+            >
+              <ThemedText style={styles.chartTitle}>
+                Monthly expense trend
+              </ThemedText>
+              <View style={styles.lineChartWrap}>
+                <LineChart
+                  data={LINE_DATA}
+                  width={chartWidth}
+                  height={LINE_CHART_HEIGHT}
+                  chartConfig={lineChartConfig}
+                  bezier
+                  withDots
+                  withInnerLines
+                  withOuterLines={false}
+                  fromZero
+                  style={styles.lineChart}
+                />
+              </View>
             </View>
           </Animated.View>
         )}
@@ -416,15 +563,17 @@ const styles = StyleSheet.create({
   },
   chartTitle: { fontSize: 16, fontWeight: '700', marginBottom: Spacing.md },
   pieWrap: { position: 'relative', alignItems: 'center', marginBottom: Spacing.sm },
+  pieChartContainer: { alignSelf: 'center' },
+  pieChartSvg: {},
   pieCenter: {
     position: 'absolute',
     alignSelf: 'center',
-    top: 100,
-    marginTop: -28,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   pieCenterLabel: { fontSize: 12 },
   legendRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: Spacing.sm },
   legendItem: { fontSize: 12 },
+  lineChartWrap: { alignItems: 'center' },
   lineChart: { marginVertical: 8, borderRadius: BorderRadius.md },
 });

@@ -19,7 +19,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: "abcd",
-  isLoading: true,
+  isLoading: false,
   error: null,
 
   hydrate: async () => {
