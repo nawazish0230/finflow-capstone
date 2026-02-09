@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export type UserDocument = User & Document;
 
@@ -10,10 +10,6 @@ export class User {
 
   @Prop({ required: true, select: false })
   password: string;
-
-  // Stores UploadService's generated UUID `documentId`s
-  @Prop({ type: [String], default: [] })
-  documentIds: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

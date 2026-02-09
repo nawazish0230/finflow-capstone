@@ -18,7 +18,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  token: "abcd",
+  token: null,
   isLoading: false,
   error: null,
 
@@ -34,8 +34,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ error: null });
     try {
-      // const { accessToken } = await authApi.login(email, password);
-      const accessToken = "abcd";
+      const { accessToken } = await authApi.login(email, password);
       await AsyncStorage.setItem(TOKEN_KEY, accessToken);
       set({ token: accessToken });
       router.replace("/(tabs)");

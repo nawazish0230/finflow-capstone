@@ -11,8 +11,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
-const public_decorator_1 = require("../common/decorators/public.decorator");
 const terminus_1 = require("@nestjs/terminus");
+const public_decorator_1 = require("../common/decorators/public.decorator");
 let HealthController = class HealthController {
     health;
     mongoose;

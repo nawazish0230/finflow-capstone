@@ -13,8 +13,6 @@ import { DOCUMENT_PROCESSING_STATUS } from '../../common/constants';
 import { TransactionsService } from '../transactions/transactions.service';
 import { S3StorageService } from './storage/s3-storage.service';
 import { TransactionParserService } from './services/transaction-parser.service';
-import { User, UserDocument } from '../auth/schemas/user.schema';
-
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
@@ -25,8 +23,6 @@ export class UploadService {
   constructor(
     @InjectModel(DocumentUpload.name)
     private readonly documentModel: Model<DocumentUploadDocument>,
-    @InjectModel(User.name)
-    private readonly userModel: Model<UserDocument>,
     private readonly config: ConfigService,
     private readonly transactionsService: TransactionsService,
     private readonly s3Storage: S3StorageService,

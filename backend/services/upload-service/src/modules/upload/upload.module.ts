@@ -9,13 +9,11 @@ import {
 import { TransactionsModule } from '../transactions/transactions.module';
 import { StorageModule } from './storage/storage.module';
 import { TransactionParserService } from './services/transaction-parser.service';
-import { User, UserSchema } from '../auth/schemas/user.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: DocumentUpload.name, schema: DocumentUploadSchema },
-      { name: User.name, schema: UserSchema },
     ]),
     TransactionsModule,
     StorageModule,

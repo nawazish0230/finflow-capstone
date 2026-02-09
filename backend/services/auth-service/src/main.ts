@@ -11,8 +11,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const port = process.env.PORT ?? 3002;
+  const port = process.env.PORT ?? 3001;
   await app.listen(port);
-  console.log(`Upload service listening on port ${port}`);
+  console.log(`Auth service listening on port ${port}`);
 }
 bootstrap();
