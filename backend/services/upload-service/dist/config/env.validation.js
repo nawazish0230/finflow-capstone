@@ -22,7 +22,7 @@ var NodeEnv;
 class EnvSchema {
     NODE_ENV = NodeEnv.Development;
     PORT = 3000;
-    MONGODB_URI = 'mongodb://localhost:27017/finflow';
+    MONGODB_URI = 'mongodb://localhost:27017/finflow_upload';
     JWT_SECRET = 'change-me-in-production';
 }
 exports.EnvSchema = EnvSchema;

@@ -13,7 +13,7 @@ import { User, UserSchema } from './schemas/user.schema';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => {
-        const expiresIn = config.get<string>('jwt.expiresIn') ?? '7d';
+        const expiresIn = config.get<string>('jwt.expiresIn') ?? '12h';
         return {
           secret: config.get<string>('jwt.secret') ?? 'change-me-in-production',
           signOptions: { expiresIn } as SignOptions,

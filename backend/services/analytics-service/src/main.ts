@@ -11,7 +11,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const port = process.env.PORT ?? 3002;
+  const port = process.env.PORT ?? 3003;
   await app.listen(port);
   console.log(`Analytics service listening on port ${port}`);
 }

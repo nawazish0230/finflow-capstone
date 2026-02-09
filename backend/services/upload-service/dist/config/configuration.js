@@ -4,11 +4,11 @@ exports.default = () => ({
     port: parseInt(process.env.PORT ?? '3000', 10),
     nodeEnv: process.env.NODE_ENV ?? 'development',
     mongodb: {
-        uri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017/finflow',
+        uri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017/finflow_upload',
     },
     jwt: {
         secret: process.env.JWT_SECRET ?? 'change-me-in-production',
-        expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+        expiresIn: process.env.JWT_EXPIRES_IN ?? '12h',
     },
     upload: {
         maxFileSizeBytes: parseInt(process.env.UPLOAD_MAX_FILE_SIZE ?? '10485760', 10),

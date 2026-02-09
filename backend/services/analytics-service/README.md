@@ -4,8 +4,20 @@ Finflow analytics microservice. Own database (`finflow_analytics`). Category spe
 
 ## Endpoints
 
-- `GET /analytics/categories` – Category spending (requires `Authorization: Bearer <token>`)
-- `GET /analytics/monthly-trends` – Monthly trends (requires Bearer token)
+All analytics and transaction endpoints require `Authorization: Bearer <token>`.
+
+### Analytics
+
+- `GET /analytics/summary` – Total debit, total credit, transaction count
+- `GET /analytics/categories` – Category breakdown (spending by category)
+- `GET /analytics/monthly` – Monthly trends
+
+### Transactions
+
+- `GET /transactions` – Paginated list. Query params: `search`, `category`, `type`, `startDate`, `endDate`, `page`, `pageSize`
+
+### Internal
+
 - `POST /internal/sync/transactions` – Sync transactions from upload-service (optional `X-Internal-Api-Key` if `INTERNAL_API_KEY` is set)
 - `GET /health` – Health check
 
