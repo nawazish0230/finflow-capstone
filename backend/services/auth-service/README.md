@@ -10,7 +10,7 @@ Finflow auth microservice. Handles user registration, login, and JWT issuance.
 
 ## Environment
 
-See `.env.example`. Use the same `JWT_SECRET` as upload-service (and any other service that validates the token).
+See `.env.example`. Use the same `JWT_SECRET` as upload-service (and any other service that validates the token). `MONGODB_URI` should point to a **separate** database (e.g. `finflow_auth`).
 
 ## Run
 

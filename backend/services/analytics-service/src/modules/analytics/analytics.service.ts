@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Transaction, TransactionDocument } from '../transactions/schemas/transaction.schema';
+import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
 
 export interface CategorySpending {
@@ -87,5 +87,32 @@ export class AnalyticsService {
         isAnomaly: m.total > threshold,
       };
     });
+  }
+
+  /** Internal: sync transactions from upload-service into analytics DB. */
+  async syncTransactions(
+    userId: string,
+    documentId: string,
+    transactions: Array<{
+      date: Date;
+      description: string;
+      amount: number;
+      type: 'debit' | 'credit';
+      category: TransactionCategory;
+      rawMerchant?: string;
+    }>,
+  ): Promise<number> {
+    const docs = transactions.map((t) => ({
+      userId,
+      documentId,
+      date: t.date,
+      description: t.description,
+      amount: t.amount,
+      type: t.type,
+      category: t.category,
+      rawMerchant: t.rawMerchant,
+    }));
+    const result = await this.transactionModel.insertMany(docs);
+    return result.length;
   }
 }

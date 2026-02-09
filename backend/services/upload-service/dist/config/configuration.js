@@ -33,5 +33,9 @@ exports.default = () => ({
     cors: {
         origin: process.env.CORS_ORIGIN ?? '*',
     },
+    analytics: {
+        serviceUrl: process.env.ANALYTICS_SERVICE_URL ?? 'http://localhost:3002',
+        internalApiKey: process.env.INTERNAL_API_KEY ?? '',
+    },
 });
 //# sourceMappingURL=configuration.js.map

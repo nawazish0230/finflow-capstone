@@ -11,13 +11,12 @@ const common_1 = require("@nestjs/common");
 const chatbot_service_1 = require("./chatbot.service");
 const chatbot_controller_1 = require("./chatbot.controller");
 const transactions_module_1 = require("../transactions/transactions.module");
-const analytics_module_1 = require("../analytics/analytics.module");
 let ChatbotModule = class ChatbotModule {
 };
 exports.ChatbotModule = ChatbotModule;
 exports.ChatbotModule = ChatbotModule = __decorate([
     (0, common_1.Module)({
-        imports: [transactions_module_1.TransactionsModule, analytics_module_1.AnalyticsModule],
+        imports: [transactions_module_1.TransactionsModule],
         controllers: [chatbot_controller_1.ChatbotController],
         providers: [chatbot_service_1.ChatbotService],
         exports: [chatbot_service_1.ChatbotService],

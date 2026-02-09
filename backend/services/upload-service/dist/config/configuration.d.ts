@@ -31,5 +31,9 @@ declare const _default: () => {
     cors: {
         origin: string;
     };
+    analytics: {
+        serviceUrl: string;
+        internalApiKey: string;
+    };
 };
 export default _default;

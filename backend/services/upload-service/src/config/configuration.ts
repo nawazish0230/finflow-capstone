@@ -2,7 +2,7 @@ export default () => ({
   port: parseInt(process.env.PORT ?? '3000', 10),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   mongodb: {
-    uri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017/finflow',
+    uri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017/finflow_upload',
   },
   jwt: {
     secret: process.env.JWT_SECRET ?? 'change-me-in-production',
@@ -36,5 +36,9 @@ export default () => ({
   },
   cors: {
     origin: process.env.CORS_ORIGIN ?? '*',
+  },
+  analytics: {
+    serviceUrl: process.env.ANALYTICS_SERVICE_URL ?? 'http://localhost:3002',
+    internalApiKey: process.env.INTERNAL_API_KEY ?? '',
   },
 });

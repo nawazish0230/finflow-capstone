@@ -5,6 +5,7 @@ import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
 import { PAGINATION } from '../../common/constants';
 import { ListTransactionsDto } from './dto/list-transactions.dto';
+import { AnalyticsClientService } from '../analytics-client/analytics-client.service';
 
 export interface TransactionSummary {
   totalDebit: number;
@@ -17,6 +18,7 @@ export class TransactionsService {
   constructor(
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
+    private readonly analyticsClient: AnalyticsClientService,
   ) {}
 
   async createMany(
@@ -43,6 +45,7 @@ export class TransactionsService {
       rawMerchant: t.rawMerchant,
     }));
     const result = await this.transactionModel.insertMany(docs);
+    this.analyticsClient.syncTransactions(userId, documentId, transactions).catch(() => {});
     return result.length;
   }
 

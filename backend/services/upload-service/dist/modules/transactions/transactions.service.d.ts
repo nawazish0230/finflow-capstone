@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
 import { ListTransactionsDto } from './dto/list-transactions.dto';
+import { AnalyticsClientService } from '../analytics-client/analytics-client.service';
 export interface TransactionSummary {
     totalDebit: number;
     totalCredit: number;
@@ -9,7 +10,8 @@ export interface TransactionSummary {
 }
 export declare class TransactionsService {
     private readonly transactionModel;
-    constructor(transactionModel: Model<TransactionDocument>);
+    private readonly analyticsClient;
+    constructor(transactionModel: Model<TransactionDocument>, analyticsClient: AnalyticsClientService);
     createMany(userId: string, documentId: string, transactions: Array<{
         date: Date;
         description: string;

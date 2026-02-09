@@ -6,7 +6,7 @@ import { DatabaseModule } from './core/database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
-import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { AnalyticsClientModule } from './modules/analytics-client/analytics-client.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { HealthModule } from './health/health.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -32,7 +32,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     AuthModule,
     UploadModule,
     TransactionsModule,
-    AnalyticsModule,
+    AnalyticsClientModule,
     ChatbotModule,
     HealthModule,
   ],
