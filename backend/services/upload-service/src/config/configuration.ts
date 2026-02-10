@@ -41,4 +41,9 @@ export default () => ({
     serviceUrl: process.env.ANALYTICS_SERVICE_URL ?? 'http://localhost:3002',
     internalApiKey: process.env.INTERNAL_API_KEY ?? '',
   },
+  kafka: {
+    brokers: (process.env.KAFKA_BROKERS ?? 'localhost:9092').split(','),
+    clientId: process.env.KAFKA_CLIENT_ID ?? 'upload-service',
+    transactionsTopic: process.env.KAFKA_TRANSACTIONS_TOPIC ?? 'transactions.created',
+  },
 });

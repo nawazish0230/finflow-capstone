@@ -9,6 +9,7 @@ import { HealthModule } from './health/health.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { KafkaModule } from './core/kafka/kafka.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     AuthModule,
     AnalyticsModule,
     HealthModule,
+    KafkaModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },

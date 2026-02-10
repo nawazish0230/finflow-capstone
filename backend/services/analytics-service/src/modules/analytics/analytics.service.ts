@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
-import { UploadClientService } from '../upload-client/upload-client.service';
+import type { TransactionCreatedEvent } from '../../events/transaction-created.event';
 
 export interface CategorySpending {
   category: TransactionCategory;
@@ -51,69 +51,74 @@ export class AnalyticsService {
   constructor(
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
-    private readonly uploadClient: UploadClientService,
   ) {}
 
-  async getSummary(userId: string, authToken: string): Promise<InsightsSummary> {
-    const summary = await this.uploadClient.getTransactionsSummary(userId, authToken);
-    console.log('summary', summary);
+  async getSummary(userId: string): Promise<InsightsSummary> {
+    const [summary] = await this.transactionModel.aggregate<{
+      totalDebit: number;
+      totalCredit: number;
+      totalTransactions: number;
+    }>([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: null,
+          totalDebit: {
+            $sum: { $cond: [{ $eq: ['$type', 'debit'] }, '$amount', 0] },
+          },
+          totalCredit: {
+            $sum: { $cond: [{ $eq: ['$type', 'credit'] }, '$amount', 0] },
+          },
+          totalTransactions: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalDebit: 1,
+          totalCredit: 1,
+          totalTransactions: 1,
+        },
+      },
+    ]);
     return {
-      totalDebit: summary.totalDebit,
-      totalCredit: summary.totalCredit,
-      transactionCount: summary.totalTransactions,
+      totalDebit: summary?.totalDebit ?? 0,
+      totalCredit: summary?.totalCredit ?? 0,
+      transactionCount: summary?.totalTransactions ?? 0,
     };
   }
 
-  async getCategorySpending(userId: string, authToken: string): Promise<CategorySpending[]> {
-    const transactions = await this.uploadClient.getAllTransactionsForUser(userId, authToken, {
-      type: 'debit',
-    });
-
-    const categoryMap = new Map<TransactionCategory, number>();
-    transactions.forEach((t) => {
-      const current = categoryMap.get(t.category) ?? 0;
-      categoryMap.set(t.category, current + t.amount);
-    });
-
-    const result = Array.from(categoryMap.entries())
-      .map(([category, total]) => ({ category, total }))
-      .sort((a, b) => b.total - a.total);
-
+  async getCategorySpending(userId: string): Promise<CategorySpending[]> {
+    const result = await this.transactionModel.aggregate<{ _id: TransactionCategory; total: number }>([
+      { $match: { userId, type: 'debit' } },
+      { $group: { _id: '$category', total: { $sum: '$amount' } } },
+      { $sort: { total: -1 } },
+    ]);
     const grandTotal = result.reduce((s, r) => s + r.total, 0);
     return result.map((r) => ({
-      category: r.category,
+      category: r._id,
       total: r.total,
       percentage: grandTotal > 0 ? Math.round((r.total / grandTotal) * 10000) / 100 : 0,
     }));
   }
 
-  async getMonthlyTrends(userId: string, authToken: string): Promise<MonthlyTrend[]> {
-    const transactions = await this.uploadClient.getAllTransactionsForUser(userId, authToken, {
-      type: 'debit',
-    });
-
-    const monthMap = new Map<string, { year: number; month: number; total: number; categories: Map<TransactionCategory, number> }>();
-
-    transactions.forEach((t) => {
-      const date = new Date(t.date);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      const key = `${year}-${month}`;
-
-      if (!monthMap.has(key)) {
-        monthMap.set(key, { year, month, total: 0, categories: new Map() });
-      }
-
-      const monthData = monthMap.get(key)!;
-      monthData.total += t.amount;
-      const categoryTotal = monthData.categories.get(t.category) ?? 0;
-      monthData.categories.set(t.category, categoryTotal + t.amount);
-    });
-
-    const byMonth = Array.from(monthMap.values()).sort((a, b) => {
-      if (a.year !== b.year) return a.year - b.year;
-      return a.month - b.month;
-    });
+  async getMonthlyTrends(userId: string): Promise<MonthlyTrend[]> {
+    interface MonthDoc {
+      _id: { year: number; month: number };
+      total: number;
+      categories: Array<{ category: TransactionCategory; amount: number }>;
+    }
+    const byMonth = await this.transactionModel.aggregate<MonthDoc>([
+      { $match: { userId, type: 'debit' } },
+      {
+        $group: {
+          _id: { year: { $year: '$date' }, month: { $month: '$date' } },
+          total: { $sum: '$amount' },
+          categories: { $push: { category: '$category', amount: '$amount' } },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+    ]);
 
     const totals = byMonth.map((m) => m.total);
     const mean = totals.length ? totals.reduce((a, b) => a + b, 0) / totals.length : 0;
@@ -125,12 +130,19 @@ export class AnalyticsService {
     const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     return byMonth.map((m) => {
-      const categoryEntries = Array.from(m.categories.entries());
-      const top = categoryEntries.sort((a, b) => b[1] - a[1])[0];
-      const topCategoryAmount = top?.[1] ?? 0;
+      const categorySums = (m.categories ?? []).reduce<Record<string, number>>(
+        (acc, c) => {
+          acc[c.category] = (acc[c.category] ?? 0) + c.amount;
+          return acc;
+        },
+        {},
+      );
+      const entries = Object.entries(categorySums) as [string, number][];
+      const top = entries.sort((a, b) => b[1] - a[1])[0];
+      const topCategoryAmount = typeof top?.[1] === 'number' ? top[1] : 0;
       return {
-        month: monthNames[m.month],
-        year: m.year,
+        month: monthNames[m._id.month],
+        year: m._id.year,
         totalSpending: m.total,
         topCategory: (top?.[0] ?? 'Others') as TransactionCategory,
         topCategoryAmount,
@@ -139,33 +151,81 @@ export class AnalyticsService {
     });
   }
 
-  // Removed: getTransactionsPaginated is now handled directly by TransactionsController
-  // which proxies to upload-service
-
-  /** Internal: sync transactions from upload-service into analytics DB. */
-  async syncTransactions(
+  async getTransactionsPaginated(
     userId: string,
-    documentId: string,
-    transactions: Array<{
-      date: Date;
-      description: string;
-      amount: number;
-      type: 'debit' | 'credit';
-      category: TransactionCategory;
-      rawMerchant?: string;
-    }>,
-  ): Promise<number> {
-    const docs = transactions.map((t) => ({
-      userId,
-      documentId,
-      date: t.date,
-      description: t.description,
-      amount: t.amount,
-      type: t.type,
-      category: t.category,
-      rawMerchant: t.rawMerchant,
+    filters: {
+      search?: string;
+      category?: TransactionCategory;
+      type?: 'debit' | 'credit';
+      startDate?: Date;
+      endDate?: Date;
+      page?: number;
+      pageSize?: number;
+    },
+  ): Promise<PaginatedTransactions> {
+    const page = Math.max(1, filters.page ?? 1);
+    const pageSize = Math.min(100, Math.max(1, filters.pageSize ?? 20));
+    const match: Record<string, unknown> = { userId };
+    if (filters.category) match.category = filters.category;
+    if (filters.type) match.type = filters.type;
+    if (filters.startDate || filters.endDate) {
+      match.date = {};
+      if (filters.startDate) (match.date as Record<string, Date>).$gte = filters.startDate;
+      if (filters.endDate) (match.date as Record<string, Date>).$lte = filters.endDate;
+    }
+    if (filters.search?.trim()) {
+      const search = filters.search.trim();
+      match.$or = [
+        { description: { $regex: search, $options: 'i' } },
+        { rawMerchant: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [rawData, total] = await Promise.all([
+      this.transactionModel
+        .find(match)
+        .sort({ date: -1 })
+        .skip((page - 1) * pageSize)
+        .limit(pageSize)
+        .lean()
+        .exec(),
+      this.transactionModel.countDocuments(match),
+    ]);
+    const data: TransactionRecord[] = rawData.map((doc) => ({
+      _id: String((doc as { _id: unknown })._id),
+      userId: doc.userId,
+      documentId: doc.documentId,
+      date: doc.date,
+      description: doc.description,
+      amount: doc.amount,
+      type: doc.type,
+      category: doc.category,
+      rawMerchant: doc.rawMerchant,
     }));
-    const result = await this.transactionModel.insertMany(docs);
-    return result.length;
+    return {
+      data,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize) || 1,
+    };
+  }
+  
+  async upsertTransactionFromEvent(event: TransactionCreatedEvent): Promise<void> {
+    await this.transactionModel.updateOne(
+      { _id: event.id },
+      {
+        $set: {
+          userId: event.userId,
+          documentId: event.documentId,
+          date: new Date(event.date),
+          description: event.description,
+          amount: event.amount,
+          type: event.type,
+          category: event.category,
+          rawMerchant: event.rawMerchant ?? null,
+        },
+      },
+      { upsert: true },
+    );
   }
 }

@@ -35,5 +35,10 @@ declare const _default: () => {
         serviceUrl: string;
         internalApiKey: string;
     };
+    kafka: {
+        brokers: string[];
+        clientId: string;
+        transactionsTopic: string;
+    };
 };
 export default _default;

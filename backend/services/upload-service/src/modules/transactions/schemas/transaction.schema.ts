@@ -24,7 +24,10 @@ export class Transaction {
   @Prop({ required: true, enum: ['debit', 'credit'] })
   type: 'debit' | 'credit';
 
-  @Prop({ required: true, enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'OnlinePayments', 'Others'] })
+  @Prop({
+    required: true,
+    enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'OnlinePayments', 'Others'],
+  })
   category: TransactionCategory;
 
   @Prop({ default: null })

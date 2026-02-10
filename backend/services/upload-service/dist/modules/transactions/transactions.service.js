@@ -18,13 +18,13 @@ const mongoose_1 = require("@nestjs/mongoose");
 const mongoose_2 = require("mongoose");
 const transaction_schema_1 = require("./schemas/transaction.schema");
 const constants_1 = require("../../common/constants");
-const analytics_client_service_1 = require("../analytics-client/analytics-client.service");
+const kafka_producer_service_1 = require("../../core/kafka/kafka-producer.service");
 let TransactionsService = class TransactionsService {
     transactionModel;
-    analyticsClient;
-    constructor(transactionModel, analyticsClient) {
+    kafkaProducer;
+    constructor(transactionModel, kafkaProducer) {
         this.transactionModel = transactionModel;
-        this.analyticsClient = analyticsClient;
+        this.kafkaProducer = kafkaProducer;
     }
     async createMany(userId, documentId, transactions) {
         const docs = transactions.map((t) => ({
@@ -38,7 +38,18 @@ let TransactionsService = class TransactionsService {
             rawMerchant: t.rawMerchant,
         }));
         const result = await this.transactionModel.insertMany(docs);
-        this.analyticsClient.syncTransactions(userId, documentId, transactions).catch(() => { });
+        const events = result.map((doc) => ({
+            id: doc._id.toString(),
+            userId: doc.userId,
+            documentId: doc.documentId,
+            date: doc.date.toISOString(),
+            description: doc.description,
+            amount: doc.amount,
+            type: doc.type,
+            category: doc.category,
+            rawMerchant: doc.rawMerchant ?? null,
+        }));
+        this.kafkaProducer.publishTransactionsCreated(events).catch(() => { });
         return result.length;
     }
     async getSummary(userId) {
@@ -111,6 +122,6 @@ exports.TransactionsService = TransactionsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(transaction_schema_1.Transaction.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
-        analytics_client_service_1.AnalyticsClientService])
+        kafka_producer_service_1.KafkaProducerService])
 ], TransactionsService);
 //# sourceMappingURL=transactions.service.js.map

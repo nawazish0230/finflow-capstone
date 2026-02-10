@@ -47,7 +47,10 @@ __decorate([
     __metadata("design:type", String)
 ], Transaction.prototype, "type", void 0);
 __decorate([
-    (0, mongoose_1.Prop)({ required: true, enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'OnlinePayments', 'Others'] }),
+    (0, mongoose_1.Prop)({
+        required: true,
+        enum: ['Food', 'Travel', 'Shopping', 'Bills', 'Entertainment', 'OnlinePayments', 'Others'],
+    }),
     __metadata("design:type", String)
 ], Transaction.prototype, "category", void 0);
 __decorate([

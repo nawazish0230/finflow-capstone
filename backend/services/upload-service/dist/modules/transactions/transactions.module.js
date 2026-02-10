@@ -10,15 +10,17 @@ exports.TransactionsModule = void 0;
 const common_1 = require("@nestjs/common");
 const mongoose_1 = require("@nestjs/mongoose");
 const transactions_service_1 = require("./transactions.service");
-const transactions_controller_1 = require("./transactions.controller");
 const transaction_schema_1 = require("./schemas/transaction.schema");
+const kafka_module_1 = require("../../core/kafka/kafka.module");
 let TransactionsModule = class TransactionsModule {
 };
 exports.TransactionsModule = TransactionsModule;
 exports.TransactionsModule = TransactionsModule = __decorate([
     (0, common_1.Module)({
-        imports: [mongoose_1.MongooseModule.forFeature([{ name: transaction_schema_1.Transaction.name, schema: transaction_schema_1.TransactionSchema }])],
-        controllers: [transactions_controller_1.TransactionsController],
+        imports: [
+            mongoose_1.MongooseModule.forFeature([{ name: transaction_schema_1.Transaction.name, schema: transaction_schema_1.TransactionSchema }]),
+            kafka_module_1.KafkaModule,
+        ],
         providers: [transactions_service_1.TransactionsService],
         exports: [transactions_service_1.TransactionsService],
     })

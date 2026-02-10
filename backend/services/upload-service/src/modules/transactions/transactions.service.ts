@@ -3,9 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Transaction, TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
+import type { TransactionCreatedEvent } from '../../events/transaction-created.event';
 import { PAGINATION } from '../../common/constants';
 import { ListTransactionsDto } from './dto/list-transactions.dto';
-import { AnalyticsClientService } from '../analytics-client/analytics-client.service';
+import { KafkaProducerService } from '../../core/kafka/kafka-producer.service';
 
 export interface TransactionSummary {
   totalDebit: number;
@@ -18,7 +19,7 @@ export class TransactionsService {
   constructor(
     @InjectModel(Transaction.name)
     private readonly transactionModel: Model<TransactionDocument>,
-    private readonly analyticsClient: AnalyticsClientService,
+    private readonly kafkaProducer: KafkaProducerService,
   ) {}
 
   async createMany(
@@ -45,7 +46,21 @@ export class TransactionsService {
       rawMerchant: t.rawMerchant,
     }));
     const result = await this.transactionModel.insertMany(docs);
-    this.analyticsClient.syncTransactions(userId, documentId, transactions).catch(() => {});
+
+    const events: TransactionCreatedEvent[] = result.map((doc) => ({
+      id: doc._id.toString(),
+      userId: doc.userId,
+      documentId: doc.documentId,
+      date: doc.date.toISOString(),
+      description: doc.description,
+      amount: doc.amount,
+      type: doc.type,
+      category: doc.category,
+      rawMerchant: doc.rawMerchant ?? null,
+    }));
+
+    this.kafkaProducer.publishTransactionsCreated(events).catch(() => {});
+
     return result.length;
   }
 
