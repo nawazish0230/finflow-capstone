@@ -3,7 +3,7 @@ import { Document } from "mongoose";
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true }) // annotated with @Schema to tell mongoose to create a schema for the class
 export class User {
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;

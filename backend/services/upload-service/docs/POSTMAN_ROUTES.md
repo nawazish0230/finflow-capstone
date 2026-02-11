@@ -70,12 +70,6 @@ Get `<your_token>` from the `accessToken` field of `POST /auth/login` response.
 
 ---
 
-## 7. Chatbot
-
-| Method | URL                                 | Auth | Body / Params                                                 |
-| ------ | ----------------------------------- | ---- | ------------------------------------------------------------- |
-| `POST` | `http://localhost:3000/chatbot/ask` | Yes  | **Body (JSON):** `{ "message": "Where am I spending most?" }` |
-
 **Example messages:**
 
 - `Where am I spending most of my money?`
@@ -92,7 +86,6 @@ Get `<your_token>` from the `accessToken` field of `POST /auth/login` response.
 3. In **Authorization** tab (or in a collection): Type = Bearer Token, Token = `<accessToken>`.
 4. **GET** `http://localhost:3000/transactions/summary` – expect 200 (may be empty data).
 5. **GET** `http://localhost:3000/analytics/categories` – expect 200.
-6. **POST** `http://localhost:3000/chatbot/ask` with body `{ "message": "Summarize my expenses" }` – expect 200.
 
 ---
 
@@ -112,5 +105,4 @@ GET  /transactions                  Query: page, limit, search, category, type, 
 GET  /analytics/categories
 GET  /analytics/monthly-trends
 
-POST /chatbot/ask                   Body: { "message": "..." }
 ```

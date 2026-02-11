@@ -20,3 +20,9 @@ npm run start:dev
 ```
 
 Default port: 3001.
+
+### Implement the version control
+
+1. Add `v1, v2`
+2. add the query parameter by passing `version=v1, v2`
+3. add v1 v2 controller
