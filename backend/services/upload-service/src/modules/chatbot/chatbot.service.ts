@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionsService } from '../transactions/transactions.service';
-import { AnalyticsService } from '../analytics/analytics.service';
+import { AnalyticsClientService } from '../analytics-client/analytics-client.service';
 
 @Injectable()
 export class ChatbotService {
   constructor(
     private readonly transactionsService: TransactionsService,
-    private readonly analyticsService: AnalyticsService,
+    private readonly analyticsClient: AnalyticsClientService,
   ) {}
 
   async getInsight(userId: string, question: string): Promise<{ answer: string }> {
     const [summary, categorySpending, monthlyTrends] = await Promise.all([
       this.transactionsService.getSummary(userId),
-      this.analyticsService.getCategorySpending(userId),
-      this.analyticsService.getMonthlyTrends(userId),
+      this.analyticsClient.getCategorySpending(userId),
+      this.analyticsClient.getMonthlyTrends(userId),
     ]);
 
     const q = question.toLowerCase();

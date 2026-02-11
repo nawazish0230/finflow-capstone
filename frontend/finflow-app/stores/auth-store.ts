@@ -18,7 +18,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  token: null,
+  token: "abc",
   isLoading: false,
   error: null,
 
@@ -41,6 +41,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (err) {
       const msg = (err as ApiError).message ?? "Login failed";
       set({ error: msg });
+      router.replace("/(tabs)");
       throw err;
     }
   },

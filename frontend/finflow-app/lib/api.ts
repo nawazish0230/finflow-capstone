@@ -13,6 +13,11 @@ const AUTH_BASE_URL =
   (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_AUTH_API_URL) ||
   BASE_URL;
 
+/** Analytics service base URL. Defaults to BASE_URL if not set. */
+const ANALYTICS_BASE_URL =
+  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_ANALYTICS_API_URL) ||
+  BASE_URL;
+
 export interface ApiError {
   message: string;
   statusCode?: number;
@@ -23,7 +28,9 @@ async function request<T>(
   options: RequestInit & { token?: string | null; baseUrl?: string } = {}
 ): Promise<T> {
   const { token, baseUrl, ...init } = options;
-  const root = baseUrl ?? BASE_URL;
+  const root =
+    baseUrl ??
+    (path.startsWith('/analytics') ? ANALYTICS_BASE_URL : BASE_URL);
   const url = path.startsWith('http') ? path : `${root}${path}`;
   const headers: HeadersInit = {
     'Content-Type': 'application/json',

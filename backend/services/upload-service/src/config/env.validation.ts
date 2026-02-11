@@ -16,7 +16,7 @@ export class EnvSchema {
   PORT: number = 3000;
 
   @IsString()
-  MONGODB_URI: string = 'mongodb://localhost:27017/finflow';
+  MONGODB_URI: string = 'mongodb://localhost:27017/finflow_upload';
 
   @IsString()
   JWT_SECRET: string = 'change-me-in-production';

@@ -12,19 +12,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatbotService = void 0;
 const common_1 = require("@nestjs/common");
 const transactions_service_1 = require("../transactions/transactions.service");
-const analytics_service_1 = require("../analytics/analytics.service");
+const analytics_client_service_1 = require("../analytics-client/analytics-client.service");
 let ChatbotService = class ChatbotService {
     transactionsService;
-    analyticsService;
-    constructor(transactionsService, analyticsService) {
+    analyticsClient;
+    constructor(transactionsService, analyticsClient) {
         this.transactionsService = transactionsService;
-        this.analyticsService = analyticsService;
+        this.analyticsClient = analyticsClient;
     }
     async getInsight(userId, question) {
         const [summary, categorySpending, monthlyTrends] = await Promise.all([
             this.transactionsService.getSummary(userId),
-            this.analyticsService.getCategorySpending(userId),
-            this.analyticsService.getMonthlyTrends(userId),
+            this.analyticsClient.getCategorySpending(userId),
+            this.analyticsClient.getMonthlyTrends(userId),
         ]);
         const q = question.toLowerCase();
         if (q.includes('most') && (q.includes('spend') || q.includes('money'))) {
@@ -61,6 +61,6 @@ exports.ChatbotService = ChatbotService;
 exports.ChatbotService = ChatbotService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [transactions_service_1.TransactionsService,
-        analytics_service_1.AnalyticsService])
+        analytics_client_service_1.AnalyticsClientService])
 ], ChatbotService);
 //# sourceMappingURL=chatbot.service.js.map

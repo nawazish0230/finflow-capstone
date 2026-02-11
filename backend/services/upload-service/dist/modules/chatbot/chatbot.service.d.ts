@@ -1,9 +1,9 @@
 import { TransactionsService } from '../transactions/transactions.service';
-import { AnalyticsService } from '../analytics/analytics.service';
+import { AnalyticsClientService } from '../analytics-client/analytics-client.service';
 export declare class ChatbotService {
     private readonly transactionsService;
-    private readonly analyticsService;
-    constructor(transactionsService: TransactionsService, analyticsService: AnalyticsService);
+    private readonly analyticsClient;
+    constructor(transactionsService: TransactionsService, analyticsClient: AnalyticsClientService);
     getInsight(userId: string, question: string): Promise<{
         answer: string;
     }>;

@@ -2,6 +2,7 @@ import { Model } from 'mongoose';
 import { TransactionDocument } from './schemas/transaction.schema';
 import { TransactionCategory } from '../../common/constants';
 import { ListTransactionsDto } from './dto/list-transactions.dto';
+import { KafkaProducerService } from '../../core/kafka/kafka-producer.service';
 export interface TransactionSummary {
     totalDebit: number;
     totalCredit: number;
@@ -9,7 +10,8 @@ export interface TransactionSummary {
 }
 export declare class TransactionsService {
     private readonly transactionModel;
-    constructor(transactionModel: Model<TransactionDocument>);
+    private readonly kafkaProducer;
+    constructor(transactionModel: Model<TransactionDocument>, kafkaProducer: KafkaProducerService);
     createMany(userId: string, documentId: string, transactions: Array<{
         date: Date;
         description: string;

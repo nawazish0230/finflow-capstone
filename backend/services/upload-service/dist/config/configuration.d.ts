@@ -31,5 +31,14 @@ declare const _default: () => {
     cors: {
         origin: string;
     };
+    analytics: {
+        serviceUrl: string;
+        internalApiKey: string;
+    };
+    kafka: {
+        brokers: string[];
+        clientId: string;
+        transactionsTopic: string;
+    };
 };
 export default _default;

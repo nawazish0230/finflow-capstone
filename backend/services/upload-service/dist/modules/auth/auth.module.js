@@ -22,7 +22,7 @@ exports.AuthModule = AuthModule = __decorate([
             jwt_1.JwtModule.registerAsync({
                 imports: [config_1.ConfigModule],
                 useFactory: (config) => {
-                    const expiresIn = config.get('jwt.expiresIn') ?? '7d';
+                    const expiresIn = config.get('jwt.expiresIn') ?? '12h';
                     return {
                         secret: config.get('jwt.secret') ?? 'change-me-in-production',
                         signOptions: { expiresIn },
