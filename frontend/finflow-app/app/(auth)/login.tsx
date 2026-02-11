@@ -102,10 +102,6 @@ export default function LoginScreen() {
             style={styles.button}
           />
 
-          <TouchableOpacity style={styles.skipLink} activeOpacity={0.7}>
-            <ThemedText style={styles.skipText}>Skip login (dev)</ThemedText>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.footer}
             onPress={() => {
