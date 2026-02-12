@@ -51,7 +51,6 @@ In this project there is no global prefix, so:
 | `upload.controller.ts`       | `@Controller('upload')`       | `POST /upload/initiate`, `GET /upload/status/:documentId`    |
 | `transactions.controller.ts` | `@Controller('transactions')` | `GET /transactions/summary`, `GET /transactions`             |
 | `analytics.controller.ts`    | `@Controller('analytics')`    | `GET /analytics/categories`, `GET /analytics/monthly-trends` |
-| `chatbot.controller.ts`      | `@Controller('chatbot')`      | `POST /chatbot/ask`                                          |
 | `health.controller.ts`       | `@Controller('health')`       | `GET /health`                                                |
 
 ### How to find “which file handles this URL?”
@@ -119,14 +118,10 @@ src/
     │   └── schemas/             # transaction.schema.ts
     │
     ├── analytics/
-    │   ├── analytics.module.ts
-    │   ├── analytics.controller.ts  # /analytics/categories, monthly-trends
-    │   └── analytics.service.ts
-    │
-    └── chatbot/
-        ├── chatbot.module.ts
-        ├── chatbot.controller.ts   # POST /chatbot/ask
-        └── chatbot.service.ts
+        ├── analytics.module.ts
+        ├── analytics.controller.ts  # /analytics/categories, monthly-trends
+        └── analytics.service.ts
+
 ```
 
 ---

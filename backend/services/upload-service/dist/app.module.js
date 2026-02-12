@@ -19,7 +19,6 @@ const auth_module_1 = require("./modules/auth/auth.module");
 const upload_module_1 = require("./modules/upload/upload.module");
 const transactions_module_1 = require("./modules/transactions/transactions.module");
 const analytics_client_module_1 = require("./modules/analytics-client/analytics-client.module");
-const chatbot_module_1 = require("./modules/chatbot/chatbot.module");
 const health_module_1 = require("./health/health.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const logging_interceptor_1 = require("./common/interceptors/logging.interceptor");
@@ -48,7 +47,6 @@ exports.AppModule = AppModule = __decorate([
             upload_module_1.UploadModule,
             transactions_module_1.TransactionsModule,
             analytics_client_module_1.AnalyticsClientModule,
-            chatbot_module_1.ChatbotModule,
             health_module_1.HealthModule,
         ],
         providers: [
