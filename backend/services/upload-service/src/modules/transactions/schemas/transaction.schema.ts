@@ -32,6 +32,9 @@ export class Transaction {
 
   @Prop({ default: null })
   rawMerchant?: string;
+
+  @Prop({ type: String, index: true })
+  transactionHash?: string; // Hash for duplicate detection
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
@@ -39,3 +42,4 @@ export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 TransactionSchema.index({ userId: 1, date: -1 });
 TransactionSchema.index({ userId: 1, category: 1 });
 TransactionSchema.index({ userId: 1, documentId: 1 });
+TransactionSchema.index({ userId: 1, transactionHash: 1 }, { unique: false }); // Index for duplicate detection

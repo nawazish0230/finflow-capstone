@@ -15,7 +15,7 @@ import { TransactionParserService } from './services/transaction-parser.service'
     MongooseModule.forFeature([
       { name: DocumentUpload.name, schema: DocumentUploadSchema },
     ]),
-    TransactionsModule,
+    TransactionsModule, // This exports GroqCategorizationService
     StorageModule,
   ],
   controllers: [UploadController],

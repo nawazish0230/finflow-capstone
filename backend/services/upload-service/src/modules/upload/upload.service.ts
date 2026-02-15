@@ -78,10 +78,19 @@ export class UploadService {
     await this.s3Storage.put(storageKey, file.buffer, 'application/pdf');
 
     // TODO: improvement we can use KAFKA to process this in background
-    setImmediate(() =>
-      this.processDocument(userId, documentId, storageKey, password).catch(
-        () => {},
-      ),
+    // setImmediate(() =>
+    //   this.processDocument(userId, documentId, storageKey, password).catch(
+    //     () => {},
+    //   ),
+    // );
+    await this.processDocumentWithEnhancedFeatures(
+      userId,
+      documentId,
+      storageKey,
+      password,
+      {
+        skipDuplicates: true,
+      },
     );
 
     await this.documentModel.updateOne(
@@ -120,28 +129,117 @@ export class UploadService {
       );
 
       // Save transactions to database
-      const count = await this.transactionsService.createMany(
-        userId,
-        documentId,
-        parsedTransactions,
-      );
+      // const count = await this.transactionsService.createMany(
+      //   userId,
+      //   documentId,
+      //   parsedTransactions,
+      // );
+      const result =
+        await this.transactionsService.createManyWithEnhancedFeatures(
+          userId,
+          documentId,
+          parsedTransactions,
+          { skipDuplicates: true },
+        );
 
       await this.documentModel.updateOne(
         { userId, storageKey },
         {
           status: DOCUMENT_PROCESSING_STATUS.COMPLETED,
-          transactionCount: count,
+          transactionCount: result.created,
         },
       );
 
       this.logger.log(
-        `Document ${documentId} processed successfully with ${count} transactions`,
+        `Document ${documentId} processed successfully with ${result.created} transactions`,
       );
     } catch (err) {
       this.logger.error(
         `Failed to process document ${documentId}`,
         (err as Error).stack,
       );
+    }
+  }
+
+  /**
+   * NEW: Process document with enhanced categorization and duplicate detection
+   * This method uses the new enhanced features without changing existing behavior
+   */
+  async processDocumentWithEnhancedFeatures(
+    userId: string,
+    documentId: string,
+    storageKey: string,
+    password?: string,
+    options?: {
+      skipDuplicates?: boolean;
+    },
+  ): Promise<{
+    created: number;
+    duplicates: number;
+    status: string;
+  }> {
+    try {
+      this.logger.log(
+        `Processing document ${documentId} with enhanced features for user ${userId}`,
+      );
+
+      // Get PDF buffer
+      let pdfBuffer: Buffer;
+      if (!this.useS3) {
+        throw new BadRequestException('Only S3 storage is supported');
+      }
+      pdfBuffer = await this.s3Storage.get(storageKey);
+
+      // Parse PDF and extract transactions
+      const parsedTransactions = await this.transactionParser.parsePdf(
+        pdfBuffer,
+        password,
+      );
+      this.logger.log(
+        `Parsed ${parsedTransactions.length} transactions from PDF`,
+      );
+
+      // Convert to enhanced transaction format
+      const enhancedTransactions = parsedTransactions.map((t) => ({
+        date: t.date,
+        description: t.description,
+        amount: t.amount,
+        type: t.type,
+        rawMerchant: t.rawMerchant,
+      }));
+
+      // Save transactions with enhanced features
+      const result =
+        await this.transactionsService.createManyWithEnhancedFeatures(
+          userId,
+          documentId,
+          enhancedTransactions,
+          options,
+        );
+
+      await this.documentModel.updateOne(
+        { userId, storageKey },
+        {
+          status: DOCUMENT_PROCESSING_STATUS.COMPLETED,
+          transactionCount: result.created,
+        },
+      );
+
+      this.logger.log(
+        `Document ${documentId} processed successfully: ${result.created} created, ${result.duplicates} duplicates`,
+      );
+
+      return {
+        created: result.created,
+        duplicates: result.duplicates,
+        status: DOCUMENT_PROCESSING_STATUS.COMPLETED,
+      };
+    } catch (err) {
+      this.logger.error(
+        `Failed to process document ${documentId} with enhanced features`,
+        (err as Error).stack,
+      );
+      throw err;
     }
   }
 

@@ -553,3 +553,22 @@ hotfix/* (urgent fixes)
 ---
 
 *This document serves as a quick reference for interviews and presentations. For detailed explanations, refer to `ARCHITECTURE_INTERVIEW_GUIDE.md`*
+
+GPT-4 Vision (OpenAI) — best overall
+Reads PDFs directly (no text extraction needed)
+Handles scanned PDFs with built-in OCR
+Understands complex layouts and tables
+Cost: ~$0.01-0.03 per page
+Claude 3 Opus Vision (Anthropic) — best for long documents
+200K token context (handles very long PDFs)
+Excellent OCR and table extraction
+Cost: ~$0.015 per page
+Google Gemini Pro Vision — best value
+Free tier: 60 requests/minute
+Good OCR and layout understanding
+Cost: Free tier or ~$0.001 per page
+Groq (Llama 3.3 70B) — best for text PDFs (already integrated)
+Very fast (~200-500ms)
+Cost-effective (~$0.0001 per request)
+No vision (needs text extraction first)
+Already implemented as fallback

@@ -60,3 +60,31 @@ or we will build the things which should be there
 22. Acceesibility, performance of api and mobile app, data optimization ? redis caching ?
 
 23. CDN -what kind of cdn's are there and hoe can be implememeted in our app(akamai, cloudfare, before s3 we can use cloudfront)
+
+
+
+deployment -docker Kubernetes, Jenkins
+lets focus on making Jenkins pipeline working (use SonarQube, 
+ 
+24. why implement PostgreSQL for auth
+25. correlation Id full usage
+26. logging monitoring - scope - give brief as I need to implement this 
+27. what is GRPC and what is the scope in my project
+28. how to handle single point of failure in api gateway ?
+29. how to ensure application is scaling on which parameter ?
+30. how it will scale ? horizonal or vertical ? when which will be done ?
+31. deployment modular way (how to deploy single service at once)
+32. how to handle autoscaling in Kubernetes
+33. why keeping PostgreSQL for auth & mongodb for other ?
+34. Automated testing for performance
+35. Grafana implementation (any logging system which we can demo)
+36. health check in services
+37. Prometheus usage ?
+38. what is bunching strategy ?
+39. client scan stagey - for vulnerability (for packages & 40. docker images) for frontend & backend
+40. for testing ? - unit testing or end to end testing ?
+41. how to ensure quality of code ?
+42. security implementation in frontend / backend / deployment
+43. what is ECR and docker hub ?
+44. why we are having rest API and not graphql and what which is better to use in api-gateway ?
+45. CI/CD for react-native code
