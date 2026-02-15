@@ -4,10 +4,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from './schemas/user.schema';
+import { User } from './entities/user.entity';
 
 export interface TokenResult {
   accessToken: string;
@@ -19,7 +19,7 @@ const SALT_ROUNDS = 10;
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   async signToken(payload: {
@@ -33,19 +33,19 @@ export class AuthService {
   /** Save new user (email + hashed password) to DB and return JWT. */
   async register(email: string, password: string): Promise<TokenResult> {
     const normalizedEmail = email.toLowerCase().trim();
-    const existing = await this.userModel
-      .findOne({ email: normalizedEmail })
-      .exec();
+    const existing = await this.userRepository.findOne({
+      where: { email: normalizedEmail },
+    });
     if (existing) {
       throw new ConflictException('User with this email already exists');
     }
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await this.userModel.create({
+    const user = await this.userRepository.save({
       email: normalizedEmail,
       password: hashedPassword,
     });
     return this.signToken({
-      sub: user._id.toString(),
+      sub: user.id,
       email: user.email,
     });
   }
@@ -56,10 +56,10 @@ export class AuthService {
     password: string,
   ): Promise<TokenResult> {
     const normalizedEmail = email.toLowerCase().trim();
-    const user = await this.userModel
-      .findOne({ email: normalizedEmail })
-      .select('+password')
-      .exec();
+    const user = await this.userRepository.findOne({
+      where: { email: normalizedEmail },
+      select: ['id', 'email', 'password'], // Explicitly select password
+    });
     if (!user || !user.password) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -67,6 +67,6 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    return this.signToken({ sub: user._id.toString(), email: user.email });
+    return this.signToken({ sub: user.id, email: user.email });
   }
 }

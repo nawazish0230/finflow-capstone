@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import configuration from './config/configuration';
-import { DatabaseModule } from './core/database/database.module';
+import { PostgresModule } from './core/database/postgres.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './health/health.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -21,7 +21,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
         limit: 100,
       },
     ]),
-    DatabaseModule,
+    PostgresModule,
     AuthModule,
     HealthModule,
   ],
