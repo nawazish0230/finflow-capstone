@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'admin'
+        DOCKER_IMAGE = 'nawazish0230'
         DOCKER_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
         EC2_HOST = credentials('ec2-host')
         EC2_USER = credentials('ec2-user')
