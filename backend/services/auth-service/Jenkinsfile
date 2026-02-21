@@ -134,28 +134,22 @@ pipeline {
     post {
         success {
             echo 'Pipeline succeeded!'
-            script {
-                // Optional: Send success notification
-                // emailext subject: "Deployment Successful: ${env.JOB_NAME}",
-                //     body: "Build ${env.BUILD_NUMBER} deployed successfully.",
-                //     to: "${env.CHANGE_AUTHOR_EMAIL}"
-            }
+            // Optional: Send success notification
+            // emailext subject: "Deployment Successful: ${env.JOB_NAME}",
+            //     body: "Build ${env.BUILD_NUMBER} deployed successfully.",
+            //     to: "${env.CHANGE_AUTHOR_EMAIL}"
         }
         failure {
             echo 'Pipeline failed!'
-            script {
-                // Optional: Send failure notification
-                // emailext subject: "Deployment Failed: ${env.JOB_NAME}",
-                //     body: "Build ${env.BUILD_NUMBER} failed. Check Jenkins for details.",
-                //     to: "${env.CHANGE_AUTHOR_EMAIL}"
-            }
+            // Optional: Send failure notification
+            // emailext subject: "Deployment Failed: ${env.JOB_NAME}",
+            //     body: "Build ${env.BUILD_NUMBER} failed. Check Jenkins for details.",
+            //     to: "${env.CHANGE_AUTHOR_EMAIL}"
         }
         always {
             echo 'Cleaning up...'
-            script {
-                // Clean up Docker images to save space
-                sh 'docker system prune -f || true'
-            }
+            // Clean up Docker images to save space
+            sh 'docker system prune -f || true'
         }
     }
 }
