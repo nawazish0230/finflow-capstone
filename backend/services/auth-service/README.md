@@ -10,7 +10,11 @@ Finflow auth microservice. Handles user registration, login, and JWT issuance.
 
 ## Environment
 
-See `.env.example`. Use the same `JWT_SECRET` as upload-service (and any other service that validates the token). `MONGODB_URI` should point to a **separate** database (e.g. `finflow_auth`).
+See `.env.example`. Use the same `JWT_SECRET` as upload-service (and any other service that validates the token). 
+
+**Database:** This service uses **PostgreSQL 16**. Configure connection details via `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DATABASE` environment variables.
+
+See `POSTGRES_16_SETUP.md` for PostgreSQL 16 setup instructions.
 
 ## Run
 

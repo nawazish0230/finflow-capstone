@@ -1,22 +1,15 @@
 /**
- * API client for FinFlow backend. Uses env or default base URL.
- * Auth (login/register) uses auth-service; other endpoints use upload-service.
- * Upload-service requires Authorization: Bearer <token> only.
+ * API client for FinFlow backend. All requests go through API Gateway.
+ * Gateway routes:
+ * - /api/auth/* → Auth Service
+ * - /api/upload/* → Upload Service
+ * - /api/analytics/* → Analytics Service
+ * - /api/chatbot/* → Chatbot Service
  */
 
-const BASE_URL =
+const GATEWAY_URL =
   (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) ||
   'http://localhost:3000';
-
-/** Auth service base URL (register, login). Defaults to BASE_URL if not set. */
-const AUTH_BASE_URL =
-  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_AUTH_API_URL) ||
-  BASE_URL;
-
-/** Analytics service base URL. Defaults to BASE_URL if not set. */
-const ANALYTICS_BASE_URL =
-  (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_ANALYTICS_API_URL) ||
-  BASE_URL;
 
 export interface ApiError {
   message: string;
@@ -28,10 +21,26 @@ async function request<T>(
   options: RequestInit & { token?: string | null; baseUrl?: string } = {}
 ): Promise<T> {
   const { token, baseUrl, ...init } = options;
-  const root =
-    baseUrl ??
-    (path.startsWith('/analytics') ? ANALYTICS_BASE_URL : BASE_URL);
-  const url = path.startsWith('http') ? path : `${root}${path}`;
+  
+  // Determine which service route to use based on path
+  let gatewayPath = path;
+  if (path.startsWith('/auth/')) {
+    // Auth endpoints: /auth/login -> /api/auth/login
+    gatewayPath = `/api${path}`;
+  } else if (path.startsWith('/analytics')) {
+    // Analytics endpoints: /analytics/summary -> /api/analytics/summary
+    gatewayPath = `/api${path}`;
+  } else if (path.startsWith('/chatbot')) {
+    // Chatbot endpoints: /chatbot/chat -> /api/chatbot/chat
+    gatewayPath = `/api${path}`;
+  } else {
+    // Upload and other endpoints: /upload -> /api/upload/upload
+    gatewayPath = `/api/upload${path}`;
+  }
+  
+  const root = baseUrl ?? GATEWAY_URL;
+  const url = gatewayPath.startsWith('http') ? gatewayPath : `${root}${gatewayPath}`;
+  
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(init.headers as Record<string, string>),
@@ -77,7 +86,6 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       headers: { 'Content-Type': 'application/json' },
-      baseUrl: AUTH_BASE_URL,
     }),
 
   register: (email: string, password: string) =>
@@ -85,6 +93,5 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
       headers: { 'Content-Type': 'application/json' },
-      baseUrl: AUTH_BASE_URL,
     }),
 };

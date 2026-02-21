@@ -46,4 +46,7 @@ export default () => ({
     clientId: process.env.KAFKA_CLIENT_ID ?? 'upload-service',
     transactionsTopic: process.env.KAFKA_TRANSACTIONS_TOPIC ?? 'transactions.created',
   },
+  groq: {
+    apiKey: process.env.GROQ_API_KEY,
+  },
 });

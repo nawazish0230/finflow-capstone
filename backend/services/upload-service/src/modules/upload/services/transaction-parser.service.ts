@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 // Use pdfjs-dist for password-aware PDF text extraction (Node entrypoint).
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
 import type { TransactionCategory } from '../../../common/constants';
 import { PDFParse } from 'pdf-parse';
+import { GroqCategorizationService } from '../../transactions/services/groq-categorization.service';
 
 export interface ParsedTransaction {
   date: Date;
@@ -194,10 +195,17 @@ const CATEGORY_KEYWORDS: Record<TransactionCategory, string[]> = {
 export class TransactionParserService {
   private readonly logger = new Logger(TransactionParserService.name);
 
+  constructor(
+    @Optional()
+    private readonly groqService?: GroqCategorizationService,
+  ) {}
+
   async parsePdf(
     buffer: Buffer,
     password?: string,
   ): Promise<ParsedTransaction[]> {
+    let pdfText: string | undefined;
+    
     try {
       const parser = new PDFParse({
         data: buffer,
@@ -205,15 +213,78 @@ export class TransactionParserService {
       });
 
       const result = await parser.getText();
-      // console.log({ result: result.text });
+      pdfText = result.text;
 
       this.logger.debug(
-        `Extracted ${result.text.length} chars from PDF via pdf-parse`,
+        `Extracted ${pdfText.length} chars from PDF via pdf-parse`,
       );
-      return this.parseTransactionsFromText(result.text);
+      
+      // Try regular parsing first
+      const transactions = this.parseTransactionsFromText(pdfText);
+      
+      // If no transactions found and Groq is available, try Groq as fallback
+      if (transactions.length === 0 && this.groqService?.isAvailable() && pdfText) {
+        this.logger.log(
+          'No transactions found with regular parsing, trying Groq LLM fallback',
+        );
+        
+        try {
+          const groqTransactions = await this.groqService.parseTransactionsFromTextWithGroq(
+            pdfText,
+          );
+          
+          if (groqTransactions && groqTransactions.length > 0) {
+            this.logger.log(
+              `Groq extracted ${groqTransactions.length} transactions from PDF`,
+            );
+            
+            // Convert Groq transactions to ParsedTransaction format
+            return groqTransactions.map((t) => ({
+              date: t.date,
+              description: t.description,
+              amount: t.amount,
+              type: t.type,
+              category: t.category,
+              rawMerchant: t.description.substring(0, 100),
+            }));
+          }
+        } catch (groqError) {
+          this.logger.warn('Groq parsing fallback failed', groqError);
+        }
+      }
+      
+      return transactions;
     } catch (error: any) {
       // pdf-parse will throw on bad/missing password; you can inspect error.message if needed
       this.logger.error('Failed to parse PDF', error);
+      
+      // If Groq is available and we have PDF text, try it as last resort fallback
+      if (this.groqService?.isAvailable() && pdfText) {
+        this.logger.log('Trying Groq LLM as fallback after parsing error');
+        try {
+          const groqTransactions = await this.groqService.parseTransactionsFromTextWithGroq(
+            pdfText,
+          );
+          
+          if (groqTransactions && groqTransactions.length > 0) {
+            this.logger.log(
+              `Groq extracted ${groqTransactions.length} transactions as fallback`,
+            );
+            
+            return groqTransactions.map((t) => ({
+              date: t.date,
+              description: t.description,
+              amount: t.amount,
+              type: t.type,
+              category: t.category,
+              rawMerchant: t.description.substring(0, 100),
+            }));
+          }
+        } catch (groqError) {
+          this.logger.warn('Groq fallback also failed', groqError);
+        }
+      }
+      
       return [];
     }
   }

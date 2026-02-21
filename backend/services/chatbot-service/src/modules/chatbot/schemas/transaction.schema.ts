@@ -44,6 +44,19 @@ export class Transaction {
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
 
+// Compound indexes for filtering
 TransactionSchema.index({ userId: 1, date: -1 });
 TransactionSchema.index({ userId: 1, category: 1 });
 TransactionSchema.index({ userId: 1, documentId: 1 });
+
+// Text index for full-text search (description and merchant)
+TransactionSchema.index(
+  { description: 'text', rawMerchant: 'text' },
+  {
+    name: 'text_search_index',
+    weights: {
+      description: 10, // Higher weight for description
+      rawMerchant: 5, // Lower weight for merchant
+    },
+  },
+);

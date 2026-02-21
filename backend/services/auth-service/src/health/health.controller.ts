@@ -1,20 +1,23 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
 import {
   HealthCheck,
   HealthCheckService,
-  MongooseHealthIndicator,
+  TypeOrmHealthIndicator,
 } from '@nestjs/terminus';
 
-@Controller('health')
+@Controller({
+  path: 'health',
+  version: VERSION_NEUTRAL, // Exclude from versioning - health endpoint is always at /health
+})
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private mongoose: MongooseHealthIndicator,
+    private db: TypeOrmHealthIndicator,
   ) {}
 
   @Get()
   @HealthCheck()
   check() {
-    return this.health.check([() => this.mongoose.pingCheck('mongodb')]);
+    return this.health.check([() => this.db.pingCheck('postgres')]);
   }
 }
