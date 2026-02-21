@@ -18,4 +18,7 @@ export default () => ({
     transactionsTopic:
       process.env.KAFKA_TRANSACTIONS_TOPIC ?? 'transactions.created',
   },
+  groq: {
+    apiKey: process.env.GROQ_API_KEY,
+  },
 });
