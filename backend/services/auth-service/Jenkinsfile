@@ -130,7 +130,7 @@ pipeline {
                                 export DOCKER_TAG='${DOCKER_TAG}'
                                 export POSTGRES_PASSWORD='\${POSTGRES_PASSWORD}'
                                 export JWT_SECRET='\${JWT_SECRET}'
-                                export POSTGRES_HOST=postgres
+                                export POSTGRES_HOST=finflow-auth-postgres
                                 
                                 # Login to Docker Hub
                                 echo '\${DOCKER_PASS}' | docker login -u '\${DOCKER_USER}' --password-stdin || true

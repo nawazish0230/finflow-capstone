@@ -9,6 +9,7 @@ set -e
 DOCKER_IMAGE="${DOCKER_IMAGE:-admin}"
 DOCKER_TAG="${DOCKER_TAG:-latest}"
 CONTAINER_NAME="finflow-auth-service"
+POSTGRES_CONTAINER_NAME="finflow-auth-postgres"
 NETWORK_NAME="auth-network"
 SERVICE_PORT=3001
 
@@ -82,7 +83,7 @@ rollback() {
         -p ${SERVICE_PORT}:${SERVICE_PORT} \
         -e PORT=${SERVICE_PORT} \
         -e NODE_ENV=production \
-        -e POSTGRES_HOST=postgres \
+        -e POSTGRES_HOST=${POSTGRES_HOST:-${POSTGRES_CONTAINER_NAME}} \
         -e POSTGRES_PORT=5432 \
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
         -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
@@ -115,6 +116,47 @@ main() {
         docker network create ${NETWORK_NAME} || true
     fi
     
+    # Ensure PostgreSQL container is running
+    if ! docker ps --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER_NAME}$"; then
+        print_info "PostgreSQL container '${POSTGRES_CONTAINER_NAME}' is not running..."
+        # Check if container exists but is stopped
+        if docker ps -a --format '{{.Names}}' | grep -q "^${POSTGRES_CONTAINER_NAME}$"; then
+            print_info "PostgreSQL container exists but is stopped, starting it..."
+            docker start ${POSTGRES_CONTAINER_NAME}
+            
+            # Connect to network if not already connected
+            if ! docker network inspect ${NETWORK_NAME} --format '{{range .Containers}}{{.Name}}{{end}}' | grep -q "${POSTGRES_CONTAINER_NAME}"; then
+                print_info "Connecting PostgreSQL container to network ${NETWORK_NAME}..."
+                docker network connect ${NETWORK_NAME} ${POSTGRES_CONTAINER_NAME} || true
+            fi
+        else
+            print_error "PostgreSQL container '${POSTGRES_CONTAINER_NAME}' not found!"
+            print_error "Please ensure PostgreSQL container is running with name '${POSTGRES_CONTAINER_NAME}'"
+            return 1
+        fi
+        
+        print_info "Waiting for PostgreSQL to be ready..."
+        sleep 5
+        
+        # Wait for PostgreSQL to be ready
+        for i in {1..30}; do
+            if docker exec ${POSTGRES_CONTAINER_NAME} pg_isready -U ${POSTGRES_USER:-postgres} > /dev/null 2>&1; then
+                print_info "PostgreSQL is ready!"
+                break
+            fi
+            print_warn "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+        done
+    else
+        print_info "PostgreSQL container '${POSTGRES_CONTAINER_NAME}' is already running"
+        
+        # Ensure PostgreSQL is connected to the network
+        if ! docker network inspect ${NETWORK_NAME} --format '{{range .Containers}}{{.Name}}{{end}}' | grep -q "${POSTGRES_CONTAINER_NAME}"; then
+            print_info "Connecting PostgreSQL container to network ${NETWORK_NAME}..."
+            docker network connect ${NETWORK_NAME} ${POSTGRES_CONTAINER_NAME} || true
+        fi
+    fi
+    
     # Pull latest image
     print_info "Pulling Docker image..."
     docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
@@ -134,7 +176,7 @@ main() {
         -p ${SERVICE_PORT}:${SERVICE_PORT} \
         -e PORT=${SERVICE_PORT} \
         -e NODE_ENV=production \
-        -e POSTGRES_HOST=${POSTGRES_HOST:-postgres} \
+        -e POSTGRES_HOST=${POSTGRES_HOST:-${POSTGRES_CONTAINER_NAME}} \
         -e POSTGRES_PORT=${POSTGRES_PORT:-5432} \
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
         -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
