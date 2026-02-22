@@ -109,7 +109,7 @@ pipeline {
                         usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
                         string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET'),
                         string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD'),
-                        sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USERNAME', passphraseVariable: '', usernameColonPasswordVariable: '')
+                        sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USERNAME')
                     ]) {
                         // Use SSH with private key file directly (no sshagent plugin needed)
                         sh """
@@ -148,7 +148,7 @@ pipeline {
             steps {
                 echo 'Verifying deployment health...'
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USERNAME', passphraseVariable: '', usernameColonPasswordVariable: '')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USERNAME')]) {
                         sh """
                             chmod 600 "\${SSH_KEY}"
                             ssh -i "\${SSH_KEY}" -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \${EC2_USER}@\${EC2_HOST} '
