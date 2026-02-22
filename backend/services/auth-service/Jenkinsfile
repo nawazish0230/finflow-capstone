@@ -128,7 +128,9 @@ pipeline {
                                 
                                 export DOCKER_IMAGE='${DOCKER_IMAGE}'
                                 export DOCKER_TAG='${DOCKER_TAG}'
+                                export POSTGRES_USER=postgres
                                 export POSTGRES_PASSWORD='\${POSTGRES_PASSWORD}'
+                                export POSTGRES_DATABASE=finflow_auth
                                 export JWT_SECRET='\${JWT_SECRET}'
                                 export POSTGRES_HOST=finflow-auth-postgres
                                 

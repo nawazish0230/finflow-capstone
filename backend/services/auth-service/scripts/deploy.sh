@@ -86,7 +86,7 @@ rollback() {
         -e POSTGRES_HOST=${POSTGRES_HOST:-${POSTGRES_CONTAINER_NAME}} \
         -e POSTGRES_PORT=5432 \
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
-        -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+        -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
         -e POSTGRES_DATABASE=finflow_auth \
         -e POSTGRES_SSL=false \
         -e JWT_SECRET=${JWT_SECRET} \
@@ -151,7 +151,8 @@ main() {
         
         # Test password authentication
         print_info "Testing PostgreSQL password authentication..."
-        if ! docker exec -e PGPASSWORD=${POSTGRES_PASSWORD} ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
+        print_info "Testing with user: ${POSTGRES_USER:-postgres}, database: ${POSTGRES_DATABASE:-finflow_auth}"
+        if ! docker exec -e PGPASSWORD="${POSTGRES_PASSWORD}" ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
             print_error "Password authentication failed!"
             print_error "The PostgreSQL password in Jenkins credentials does not match the container password."
             print_error ""
@@ -174,7 +175,8 @@ main() {
         
         # Test password authentication
         print_info "Testing PostgreSQL password authentication..."
-        if ! docker exec -e PGPASSWORD=${POSTGRES_PASSWORD} ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
+        print_info "Testing with user: ${POSTGRES_USER:-postgres}, database: ${POSTGRES_DATABASE:-finflow_auth}"
+        if ! docker exec -e PGPASSWORD="${POSTGRES_PASSWORD}" ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
             print_error "Password authentication failed!"
             print_error "The PostgreSQL password in Jenkins credentials does not match the container password."
             print_error ""
@@ -201,6 +203,7 @@ main() {
     
     # Start new container
     print_info "Starting new container..."
+    print_info "Using PostgreSQL connection: ${POSTGRES_USER:-postgres}@${POSTGRES_HOST:-${POSTGRES_CONTAINER_NAME}}:${POSTGRES_PORT:-5432}/${POSTGRES_DATABASE:-finflow_auth}"
     docker run -d \
         --name ${CONTAINER_NAME} \
         --restart unless-stopped \
@@ -210,7 +213,7 @@ main() {
         -e POSTGRES_HOST=${POSTGRES_HOST:-${POSTGRES_CONTAINER_NAME}} \
         -e POSTGRES_PORT=${POSTGRES_PORT:-5432} \
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
-        -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+        -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD}" \
         -e POSTGRES_DATABASE=${POSTGRES_DATABASE:-finflow_auth} \
         -e POSTGRES_SSL=false \
         -e JWT_SECRET=${JWT_SECRET} \
@@ -222,6 +225,10 @@ main() {
     # Wait for container to start
     print_info "Waiting for container to start..."
     sleep 5
+    
+    # Debug: Check environment variables in container
+    print_info "Checking environment variables in container..."
+    docker exec ${CONTAINER_NAME} env | grep -E "POSTGRES_|JWT_" || true
     
     # Health check
     if check_health; then
