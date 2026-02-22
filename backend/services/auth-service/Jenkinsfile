@@ -78,10 +78,14 @@ pipeline {
                     ).trim()
                     
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        // Use environment variables properly (avoid Groovy string interpolation for secrets)
+                        // Write credentials to a temporary file to avoid shell interpolation issues
                         sh """
                             set +x
-                            echo "\${DOCKER_PASS}" | ${dockerCmd} login -u "\${DOCKER_USER}" --password-stdin
+                            echo "\$DOCKER_PASS" | ${dockerCmd} login -u "\$DOCKER_USER" --password-stdin || {
+                                echo "Docker login failed. Check your Docker Hub credentials in Jenkins."
+                                echo "Username used: \$DOCKER_USER"
+                                exit 1
+                            }
                             set -x
                         """
                         sh "${dockerCmd} push ${DOCKER_IMAGE}:${DOCKER_TAG}"
