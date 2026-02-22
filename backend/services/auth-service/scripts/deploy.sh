@@ -44,11 +44,38 @@ check_health() {
     
     print_info "Checking service health..."
     
+    # Check if curl is available
+    if ! command -v curl > /dev/null 2>&1; then
+        print_error "curl is not installed. Installing curl..."
+        # Try to install curl (works on Ubuntu/Debian)
+        sudo apt-get update && sudo apt-get install -y curl || {
+            print_error "Failed to install curl. Please install curl manually."
+            return 1
+        }
+    fi
+    
     while [ $attempt -le $max_attempts ]; do
-        if curl -f http://localhost:${SERVICE_PORT}/health > /dev/null 2>&1; then
-            print_info "Service is healthy!"
+        # Use curl with explicit status code check
+        local http_code=$(curl -s -o /tmp/health_response.txt -w "%{http_code}" http://localhost:${SERVICE_PORT}/health 2>/dev/null || echo "000")
+        
+        if [ "$http_code" = "200" ]; then
+            print_info "Service is healthy! (HTTP $http_code)"
+            # Show health response for debugging
+            if [ -f /tmp/health_response.txt ]; then
+                print_info "Health check response: $(cat /tmp/health_response.txt)"
+                rm -f /tmp/health_response.txt
+            fi
             return 0
+        else
+            # Show what we got for debugging
+            if [ -f /tmp/health_response.txt ]; then
+                print_warn "Health check returned HTTP $http_code. Response: $(head -c 200 /tmp/health_response.txt)"
+                rm -f /tmp/health_response.txt
+            else
+                print_warn "Health check failed (HTTP $http_code or connection error)"
+            fi
         fi
+        
         print_warn "Waiting for service to be healthy... ($attempt/$max_attempts)"
         sleep 2
         attempt=$((attempt + 1))
