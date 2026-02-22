@@ -44,7 +44,8 @@ pipeline {
                     ).trim()
                     
                     dir('backend/services/auth-service') {
-                        sh "${dockerCmd} build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                        // Build for linux/amd64 platform (EC2 uses x86_64 architecture)
+                        sh "${dockerCmd} build --platform linux/amd64 -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                         sh "${dockerCmd} tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
                     }
                 }
