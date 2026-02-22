@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'nawazish0230'
+        // Docker Hub username/repository
+        DOCKER_IMAGE = 'nawazish0230/auth-service'
         DOCKER_TAG = "${env.BUILD_NUMBER}-${env.GIT_COMMIT.take(7)}"
         EC2_HOST = credentials('ec2-host')
         EC2_USER = credentials('ec2-user')
@@ -34,8 +35,10 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    docker.build("${DOCKER_IMAGE}:latest")
+                    dir('backend/services/auth-service') {
+                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                        sh "docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest"
+                    }
                 }
             }
         }
@@ -44,11 +47,13 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 script {
-                    try {
-                        sh 'npm test || true'
-                        echo 'Tests completed (allowing failures for now)'
-                    } catch (Exception e) {
-                        echo "Test stage completed with warnings: ${e.message}"
+                    dir('backend/services/auth-service') {
+                        try {
+                            sh 'npm test || true'
+                            echo 'Tests completed (allowing failures for now)'
+                        } catch (Exception e) {
+                            echo "Test stage completed with warnings: ${e.message}"
+                        }
                     }
                 }
             }
@@ -78,9 +83,12 @@ pipeline {
                     ]) {
                         sshagent(['ec2-ssh-key']) {
                             // Copy deployment script to EC2
-                            sh """
-                                scp -o StrictHostKeyChecking=no backend/services/auth-service/scripts/deploy.sh ${EC2_USER}@${EC2_HOST}:/tmp/deploy.sh
-                            """
+                            script {
+                                def deployScriptPath = 'backend/services/auth-service/scripts/deploy.sh'
+                                sh """
+                                    scp -o StrictHostKeyChecking=no ${deployScriptPath} ${EC2_USER}@${EC2_HOST}:/tmp/deploy.sh
+                                """
+                            }
                             
                             // Execute deployment
                             sh """
@@ -148,8 +156,14 @@ pipeline {
         }
         always {
             echo 'Cleaning up...'
-            // Clean up Docker images to save space
-            sh 'docker system prune -f || true'
+            // Clean up Docker images to save space (only if docker is available)
+            script {
+                try {
+                    sh 'docker system prune -f || true'
+                } catch (Exception e) {
+                    echo 'Docker cleanup skipped (docker not available)'
+                }
+            }
         }
     }
 }
