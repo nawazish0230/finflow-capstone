@@ -18,10 +18,11 @@ import { User } from '../../modules/auth/entities/user.entity';
         entities: [User],
         synchronize: config.get<string>('nodeEnv') === 'development',
         logging: false, // Disable all query logging
-        ssl:
-          config.get<string>('nodeEnv') === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
+        // Disable SSL for Docker-to-Docker connections (containers on same network)
+        // Enable SSL only for external/managed database services
+        ssl: config.get<string>('postgres.ssl') === 'true' 
+          ? { rejectUnauthorized: false }
+          : false,
       }),
       inject: [ConfigService],
     }),

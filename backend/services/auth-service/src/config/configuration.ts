@@ -21,6 +21,7 @@ export default () => {
       username: postgresUser,
       password: postgresPassword,
       database: process.env.POSTGRES_DATABASE ?? "finflow_auth",
+      ssl: process.env.POSTGRES_SSL ?? "false", // Set to "true" for managed databases (RDS, etc.)
     },
     jwt: {
       secret: process.env.JWT_SECRET ?? "change-me-in-production",

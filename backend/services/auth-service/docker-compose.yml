@@ -36,6 +36,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DATABASE: finflow_auth
+      POSTGRES_SSL: "false"
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_EXPIRES_IN: 12h
       CORS_ORIGIN: "*"

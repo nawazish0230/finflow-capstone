@@ -88,6 +88,7 @@ rollback() {
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
         -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
         -e POSTGRES_DATABASE=finflow_auth \
+        -e POSTGRES_SSL=false \
         -e JWT_SECRET=${JWT_SECRET} \
         -e JWT_EXPIRES_IN=12h \
         -e CORS_ORIGIN=* \
@@ -181,6 +182,7 @@ main() {
         -e POSTGRES_USER=${POSTGRES_USER:-postgres} \
         -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
         -e POSTGRES_DATABASE=${POSTGRES_DATABASE:-finflow_auth} \
+        -e POSTGRES_SSL=false \
         -e JWT_SECRET=${JWT_SECRET} \
         -e JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-12h} \
         -e CORS_ORIGIN=${CORS_ORIGIN:-*} \
