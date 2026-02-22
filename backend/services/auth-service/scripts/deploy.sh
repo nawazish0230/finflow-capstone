@@ -148,6 +148,18 @@ main() {
             print_warn "Waiting for PostgreSQL... ($i/30)"
             sleep 2
         done
+        
+        # Test password authentication
+        print_info "Testing PostgreSQL password authentication..."
+        if ! docker exec ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
+            print_error "Password authentication failed!"
+            print_error "The PostgreSQL password in Jenkins credentials may not match the container password."
+            print_error "Please verify the password for container '${POSTGRES_CONTAINER_NAME}'"
+            print_error "You can check the container's environment variables with:"
+            print_error "  docker inspect ${POSTGRES_CONTAINER_NAME} | grep POSTGRES_PASSWORD"
+            return 1
+        fi
+        print_info "PostgreSQL password authentication successful!"
     else
         print_info "PostgreSQL container '${POSTGRES_CONTAINER_NAME}' is already running"
         
@@ -156,6 +168,21 @@ main() {
             print_info "Connecting PostgreSQL container to network ${NETWORK_NAME}..."
             docker network connect ${NETWORK_NAME} ${POSTGRES_CONTAINER_NAME} || true
         fi
+        
+        # Test password authentication
+        print_info "Testing PostgreSQL password authentication..."
+        if ! PGPASSWORD=${POSTGRES_PASSWORD} docker exec -e PGPASSWORD=${POSTGRES_PASSWORD} ${POSTGRES_CONTAINER_NAME} psql -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DATABASE:-finflow_auth} -c "SELECT 1;" > /dev/null 2>&1; then
+            print_error "Password authentication failed!"
+            print_error "The PostgreSQL password in Jenkins credentials does not match the container password."
+            print_error ""
+            print_error "To fix this, you have two options:"
+            print_error "1. Check the container's password: docker inspect ${POSTGRES_CONTAINER_NAME} | grep POSTGRES_PASSWORD"
+            print_error "2. Update Jenkins 'postgres-password' credential to match the container's password"
+            print_error ""
+            print_error "Or recreate the container with the Jenkins password."
+            return 1
+        fi
+        print_info "PostgreSQL password authentication successful!"
     fi
     
     # Pull latest image
